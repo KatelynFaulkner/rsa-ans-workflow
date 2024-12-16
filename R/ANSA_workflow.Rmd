@@ -1,0 +1,113 @@
+---
+title: "Alien Names South Africa (ANSA) workflow"
+author: "Katelyn T. Faulkner"
+date: "03/12/2024"
+output: pdf_document
+header-includes:
+  \usepackage{float}
+---
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(message=FALSE, warning = FALSE,
+tidy.opts=list(width.cutoff=60)) 
+```
+
+# Introduction
+
+The automated workflow Alien Names South Africa (ANSA) was developed to standardise the names of taxa for alien species lists for South Africa. It was developed specifically using the taxonomic backbones implemented in South Africa; and has been used to standardise a list of alien taxon names (http://dx.doi.org/10.5281/zenodo.8217197) for the report "The Status of Biological Invasions and their Management in South Africa" (https://dx.doi.org/10.5281/zenodo.8217182).
+
+The workflow makes use of three taxonomic backbones: that of the Global Biodiversity Information Facility (GBIF); that of the Botanical Database of Southern Africa (BODATSA); and that of The World Checklist of Vascular Plants (WCVP), accessed via Plants of the World Online (POWO) (https://powo.science.kew.org/).
+
+The taxonomic backbone used depends on the taxonomic group:
+1. The GBIF backbone is used for non-plant taxa (e.g., animals, fungi, and chromista)
+2. The BODATSA backbone is used for alien plants recorded outside of captivity
+3. The WCVP backbone is used for alien plants not found in captivity 
+
+In addition to standardising a list of taxon names based on the three taxonomic backbones, the workflow obtains canonical names and higher taxonomic information for the list of species from GBIF, and flags issues and uncertainties that arise during the taxonomic standardisation. 
+
+This document explains the workflow and provides the R code for it, and notes and examples are provided throughout to provide guidance on the code and outputs.
+
+The workflow has been created in R software, version 4.4.0 (R Core Team 2024). 
+
+# Requirements 
+
+The following are required to execute of the workflow: 
+
+1. Installed R software (version 4.4.0 or higher) and Rstudio
+
+2. Installed R packages: "tidyr", "dplyr",
+             "rgbif", "stringdist", "gtools", "stringr", "sjmisc", "rWCVP", 
+             "remotes", "rWCVPdata", "purrr"
+
+3. A stable internet connection
+
+## The R environment
+
+R (version 4.0.0 or higher) and Rstudio needs to be installed, which are freely available at: https://cran.r-project.org and https://www.rstudio.com/
+
+Eleven R packages and their dependencies must be installed. 
+Ten of these packages can be obtained through the R CRAN, and the remaining package "rWCVPdata" can be obtained from GitHub, using the package "remotes". 
+
+If executed the following code will load and, if required, install the packages.
+
+Specify the packages required from CRAN:
+
+```{r}
+packages = c("tidyr", "dplyr",
+             "rgbif", "stringdist", "gtools", "stringr", "sjmisc", "rWCVP", "purrr") # nine packages are required
+```
+
+Install CRAN packages (if required) and load:
+
+```{r}
+package.check <- lapply(
+  packages,
+  FUN = function(x) {
+    if (!require(x, character.only = TRUE)) {
+      install.packages(x, dependencies = TRUE)
+      library(x, character.only = TRUE)
+    }
+  }
+)
+```
+
+Install and load "remote" package and install and load "rWCVPdata" package from GitHub
+
+```{r}
+remotes.check<-"remotes" %in% rownames(installed.packages()) # one package required from github
+if(remotes.check == FALSE){
+  install.packages("remotes")
+  remotes::install_github('matildabrown/rWCVPdata')
+}
+require('rWCVPdata')
+```
+
+## Scripts
+
+The R script for this workflow is provided below, and is also available in a .R file on a GitHub repository "https://github.com/KatelynFaulkner/alien-species-names". 
+
+The repository can be downloaded onto your computer as a zip file. The downloaded zip file will contain all the required folders. The zip file will need to be extracted. The main folder contains the Rstudio project file (ansa-workflow.Rproj) of the workflow. This file should be opened to use the workflow. The subfolder `R/` contains this R markdown and the script as a .R file. The subfolder `data/` contains three subfolders named `inputs/`, `interim/`, and `outputs/`. The `inputs/` subfolder contains all files required to run the workflow. Outputs that are produced while executing the workflow, but are not the final output are stored in the folder `interim/`. The final output of the workflow is stored in the `outputs/` folder.
+
+## Inputs
+
+The following four inputs are required:
+
+1. The list of taxon names you want to standardise in csv format
+2. Information on the format of the taxon names to be standardised
+3. The BODATSA dataset in csv format. Downloaded from https://posa.sanbi.org/sanbi/Explore
+4. The date that the BODATSA dataset was downloaded
+
+Inputs 1 and 3 are provided by the user, who saves the files in the `inputs/` subfolder. 
+Input 2 is provided by the user, and entered in Step 7 of the workflow. There are two possible options: "canonical" and "scientific"
+Input 4 is provided by the user, and entered in Step 4 of the workflow in DMY (Day, month, year) format. For example "05 December 2024".
+
+### Input file, names, formats, and column names
+
+The execution of this workflow requires two input datasets in csv format. These datasets must have specific names, contain specific data, and their columns must have specific names,
+
+#### List of taxa you want to standardise
+This dataset must contain the list of taxon names that need to be standardised. The dataset must be named 'OriginalNames.csv'. The dataset must contain only one column, which will contain the names of the taxa. The name of this column must be 'verbatimScientificName'
+ 
+#### BODATSA data
+This dataset must be downloaded from https://posa.sanbi.org/sanbi/Explore. To do so, simply click download, indicated with using the symbology for microsoft excel (a green 'X'). The standard dataset must be downloaded (i.e., no columns must be added or removed before download). The dataset will be downloaded as an excel file, but must be saved in the `inputs/` folder as a csv. The data must be used in exactly the format in which it is downloaded (i.e., it must not be changed in any way). The file must be named: BODATSA.csv
+
