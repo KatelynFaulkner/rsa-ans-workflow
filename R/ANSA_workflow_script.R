@@ -172,7 +172,7 @@ for(j in 1:m){ # loop through the taxon names
   if(is.na(x$family)){ # if the name was not recognised, bind the required data
     u<-cbind(NamesDat[j,], x$canonicalName, x$kingdom, x$phylum, x$class, x$order,x$family, x$scientificName, x$synonym, x$rank, x$status, x$matchType, x$usageKey)
   }
-  else if(x$status == "ACCEPTED"|x$status == "DOUBTFUL"){ # if the name is acceted of doubtful, bind the required data
+  else if(x$status == "ACCEPTED"|x$status == "DOUBTFUL"){ # if the name is accepted of doubtful, bind the required data
     u<-cbind(NamesDat[j,], x$canonicalName, x$kingdom, x$phylum, x$class, x$order,x$family, x$scientificName, x$synonym, x$rank, x$status, x$matchType, x$usageKey)
   }
   else if(x$status == "SYNONYM"){ # if name is a synonym, fetch the accepted scientific name, and bind required columns
@@ -188,7 +188,7 @@ for(j in 1:m){ # loop through the taxon names
 
 GBIFInterim<-GBIFMatch
 
-write.csv(GBIFInterim, "data//interim//GBIFInterim.csv")
+write.csv(GBIFInterim, "data//interim//GBIFInterim.csv", row.names = FALSE)
 
 ## Step 10: Separate dataset into plants and other organisms
 
@@ -337,7 +337,7 @@ BODATSAMatch = BODATSAMatch %>%
 
 BODATSAInterim<-BODATSAMatch
 
-write.csv(BODATSAInterim, "data//interim//BODATSAInterim.csv")
+write.csv(BODATSAInterim, "data//interim//BODATSAInterim.csv", row.names = FALSE)
 
 ### Resolve, if possible, taxa with multiple matches
 
@@ -505,7 +505,7 @@ colnames(matches)[colnames(matches) == "family.x"] <- "family" # rename column
 
 WCVPInterim<- matches
 
-write.csv(WCVPInterim, "data//interim//WCVPInterim.csv")
+write.csv(WCVPInterim, "data//interim//WCVPInterim.csv", row.names = FALSE)
 
 ### Resolve, if possible, taxa with multiple matches
 
