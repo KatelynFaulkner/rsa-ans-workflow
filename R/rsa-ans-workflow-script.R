@@ -31,7 +31,7 @@ require('rWCVPdata') # load package from GitHub
 
 ### Load dataset from BODATSA
 
-BODATSA<-read.csv("data\\inputs\\BODATSA.csv") # file must be named "BODATSA.csv"
+BODATSA<-read.csv("data\\raw\\BODATSA.csv") # file must be named "BODATSA.csv"
 
 ### Provide required information on BODATSA
 
@@ -131,11 +131,11 @@ write.csv(BODATSA, "data//interim//BODATSAPrepared.csv", row.names = FALSE)
 
 ### Load list of names for standardisation
 
-NamesDat<-read.csv("data\\inputs\\OriginalNames.csv") # file must be named "OriginalNames.csv"
+NamesDat<-read.csv("data\\raw\\OriginalNames.csv") # file must be named "OriginalNames.csv"
 
 ### Provide required information on list of names for standardisation
 
-NameType<-"canonical" # here stipulate format of taxon names: 'canonical' or 'scientific'
+NameType<-"scientific" # here stipulate format of taxon names: 'canonical' or 'scientific'
 
 ### View header of data and get the number of taxa
 
@@ -664,6 +664,6 @@ AllMatch<-AllMatch[match(NamesDat$verbatimScientificName, AllMatch$verbatimScien
 
 ## Write final output to file
 
-write.csv(AllMatch, "data//outputs//Taxon_names_standardised.csv", row.names = FALSE)
+write.csv(AllMatch, "data//processed//Taxon_names_standardised.csv", row.names = FALSE)
 
 
