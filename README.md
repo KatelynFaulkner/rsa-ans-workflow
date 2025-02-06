@@ -29,6 +29,8 @@ The following are required to execute the workflow:
 
 R (version 4.0.0 or higher) and Rstudio need to be installed, which are freely available at: https://cran.r-project.org and https://www.rstudio.com/
 
+### Installing the required packages
+
 Nine R packages and their dependencies must be installed. Eight of these packages can be obtained through the R CRAN, and the remaining package "rWCVPdata" can be obtained from GitHub, using the package "remotes". 
 
 If executed the following code will load and, if required, install the packages.
@@ -54,7 +56,7 @@ package.check <- lapply(
 )
 ```
 
-Install and load "remote" package and install and load "rWCVPdata" package from GitHub
+Install and load "remote" package and install and load "rWCVPdata" package from GitHub:
 
 ```{r}
 remotes.check<-"remotes" %in% rownames(installed.packages()) 
@@ -65,6 +67,6 @@ if(remotes.check == FALSE){
 require('rWCVPdata')
 ```
 
-### Scripts
+### Installing and running the scripts
 
 This repository can be downloaded onto your computer as a zip file. The downloaded zip file will contain all the required folders. The zip file will need to be extracted. The main folder contains the Rstudio project file (rsa-ans-workflow.Rproj) of the workflow. This file should be opened to use the workflow. The subfolder `R/` contains the script as .R and .Rmd files. The folder `manuals/` contains a manual describing the workflow (.Rmd), and a README.Rmd that decribes the outputs.
