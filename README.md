@@ -14,3 +14,57 @@ The taxonomic backbone used depends on the taxonomic group:
 In addition to standardising a list of taxon names based on the three taxonomic backbones, the workflow obtains canonical names and higher taxonomic information for the taxa from GBIF, and detects, corrects, and flags potential issues and errors. 
 
 The workflow has been created in R software, version 4.4.0 (R Core Team 2024). 
+
+# Requirements 
+
+The following are required to execute the workflow: 
+
+1. Installed R software (version 4.4.0 or higher) and Rstudio
+
+2. Installed R packages: "tidyr", "dplyr","rgbif", "stringr", "stringdist", "rWCVP", "purrr", "remotes", "rWCVPdata"
+
+3. A stable internet connection
+
+## The R environment
+
+R (version 4.0.0 or higher) and Rstudio need to be installed, which are freely available at: https://cran.r-project.org and https://www.rstudio.com/
+
+Nine R packages and their dependencies must be installed. Eight of these packages can be obtained through the R CRAN, and the remaining package "rWCVPdata" can be obtained from GitHub, using the package "remotes". 
+
+If executed the following code will load and, if required, install the packages.
+
+Specify the packages required from R CRAN:
+
+```{r}
+packages = c("tidyr", "dplyr",
+             "rgbif", "stringr", "stringdist", "rWCVP", "purrr")
+```
+
+Install R CRAN packages (if required) and load:
+
+```{r}
+package.check <- lapply(
+  packages,
+  FUN = function(x) {
+    if (!require(x, character.only = TRUE)) {
+      install.packages(x, dependencies = TRUE)
+      library(x, character.only = TRUE)
+    }
+  }
+)
+```
+
+Install and load "remote" package and install and load "rWCVPdata" package from GitHub
+
+```{r}
+remotes.check<-"remotes" %in% rownames(installed.packages()) 
+if(remotes.check == FALSE){
+  install.packages("remotes")
+  remotes::install_github('matildabrown/rWCVPdata')
+}
+require('rWCVPdata')
+```
+
+## Scripts
+
+This repository can be downloaded onto your computer as a zip file. The downloaded zip file will contain all the required folders. The zip file will need to be extracted. The main folder contains the Rstudio project file (rsa-ans-workflow.Rproj) of the workflow. This file should be opened to use the workflow. The subfolder `R/` contains the script as .R and .Rmd files. The folder `manuals/` contains a manual describing the workflow (.Rmd), and a README.Rmd that decribes the outputs.
