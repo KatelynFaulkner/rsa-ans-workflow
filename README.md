@@ -15,7 +15,7 @@ In addition to standardising a list of taxon names based on the three taxonomic 
 
 The workflow has been created in R software, version 4.4.0 (R Core Team 2024). 
 
-# Requirements 
+## Requirements 
 
 The following are required to execute the workflow: 
 
@@ -25,7 +25,7 @@ The following are required to execute the workflow:
 
 3. A stable internet connection
 
-## The R environment
+### The R environment
 
 R (version 4.0.0 or higher) and Rstudio need to be installed, which are freely available at: https://cran.r-project.org and https://www.rstudio.com/
 
@@ -65,6 +65,6 @@ if(remotes.check == FALSE){
 require('rWCVPdata')
 ```
 
-## Scripts
+### Scripts
 
 This repository can be downloaded onto your computer as a zip file. The downloaded zip file will contain all the required folders. The zip file will need to be extracted. The main folder contains the Rstudio project file (rsa-ans-workflow.Rproj) of the workflow. This file should be opened to use the workflow. The subfolder `R/` contains the script as .R and .Rmd files. The folder `manuals/` contains a manual describing the workflow (.Rmd), and a README.Rmd that decribes the outputs.
