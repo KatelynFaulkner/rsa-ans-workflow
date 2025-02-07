@@ -116,7 +116,7 @@ Input A is provided by the user and can be downloaded from https://posa.sanbi.or
 
 Input B is provided by the user, and is manually entered under Step 2a in the script of the workflow in DMY (day, month, year) format. For example "05 December 2024". 
 
-Input C is provided by the user, who saves the files in the `raw/` subfolder. 
+Input C is provided by the user, who saves the file in the `raw/` subfolder. 
 
 Input D is provided by the user, and is manually entered under Step 2b in the script of the workflow. There are two possible options: "canonical" and "scientific". "canonical" is stipulated if the taxon names are scientific names without authorship and date information. "scientific" is stipulated if the taxon names are scientific names with authorship and date information.
 
