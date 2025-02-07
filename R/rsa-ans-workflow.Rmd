@@ -314,7 +314,7 @@ names(PlantDat) # names of the columns
 GBIFMatch<-GBIFMatch %>% filter(kingdom != "Plantae"|is.na(kingdom)) # create a non-plants subset 
 ```
 
-# Step 5 Assess and flag issues for non-plant taxa
+# Step 5: Assess and flag issues for non-plant taxa
 
 #### Assess issues
 
