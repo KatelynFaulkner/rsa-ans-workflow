@@ -135,7 +135,7 @@ NamesDat<-read.csv("data\\raw\\OriginalNames.csv") # file must be named "Origina
 
 ### Provide required information on list of names for standardisation
 
-NameType<-"scientific" # here stipulate format of taxon names: 'canonical' or 'scientific'
+NameType<-"canonical" # here stipulate format of taxon names: 'canonical' or 'scientific'
 
 ### View header of data and get the number of taxa
 
@@ -203,7 +203,7 @@ names(PlantDat) # names of the columns
 
 GBIFMatch<-GBIFMatch %>% filter(kingdom != "Plantae"|is.na(kingdom)) # create a non-plants subset 
 
-# Step 5 Assess and flag issues for non-plant taxa
+# Step 5: Assess and flag issues for non-plant taxa
 
 ## Assess issues
 
