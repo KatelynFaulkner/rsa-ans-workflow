@@ -4,7 +4,7 @@
 ## Install and load R CRAN packages
 
 packages = c("tidyr", "dplyr",
-             "rgbif", "stringr", "stringdist", "rWCVP", "purrr") # seven packages are required
+             "rgbif", "stringr", "stringdist", "rWCVP", "purrr", "lubridate") # eight packages are required
 
 package.check <- lapply(
   packages,
@@ -16,7 +16,7 @@ package.check <- lapply(
   }
 )
 
-## Install and load "remote" package from R CRAN, and install and load "rWCVPdata" package from GitHub
+## Install and load "remotes" package from R CRAN, and install and load "rWCVPdata" package from GitHub
 
 remotes.check<-"remotes" %in% rownames(installed.packages()) 
 if(remotes.check == FALSE){
@@ -35,7 +35,13 @@ BODATSA<-read.csv("data\\raw\\BODATSA.csv") # file must be named "BODATSA.csv"
 
 ### Provide required information on BODATSA
 
-BODATSADate<-"02 December 2024" # stipulate the date the BODATSA data were downloaded in the format shown here
+Userdate<-"" # In the quotation marks, type in the date that the BODATSA dataset was downloaded in day-month-year format
+
+FormatDate<-suppressWarnings(format(dmy(Userdate), '%d %B %Y')) # check to see if information provided is correct
+if (is.na(FormatDate)==TRUE) {stop("Date was not entered, or was not in the correct format. Please try again")    
+} else { 
+  BODATSADate<-FormatDate
+}
 
 ### View header of data 
 
@@ -135,7 +141,17 @@ NamesDat<-read.csv("data\\raw\\OriginalNames.csv") # file must be named "Origina
 
 ### Provide required information on list of names for standardisation
 
-NameType<-"canonical" # here stipulate format of taxon names: 'canonical' or 'scientific'
+UserNameType<-"" # In the quotation marks, type in the format of the taxon names. Either 'canonical' or 'scientific'
+
+NameTypeFormat<-ifelse(UserNameType == "scientific", "scientific", # check to see if the correct information was provided
+                       ifelse(UserNameType == "Scientific", "scientific",
+                              ifelse(UserNameType == "canonical","canonical",
+                                     ifelse(UserNameType == "Canonical","canonical", NA))))
+if (is.na(NameTypeFormat)==TRUE) {stop("Format of the taxon names was not entered, or was not one of the accepted options. Please try again")    
+} else { 
+  NameType<-NameTypeFormat
+}
+
 
 ### View header of data and get the number of taxa
 
