@@ -2,19 +2,21 @@
 title: |
   | Description:
   | an automated workflow to standardise taxon names for South African alien species lists 
-
 author:
   - Katelyn T. Faulkner$^{1,2}$
-
   - $^1$South African National Biodiversity Institute, Kirstenbosch Research Centre, Cape Town, 
   - 7735, South Africa
   - $^2$Department of Zoology and Entomology, University of Pretoria, Pretoria, 0028, 
   - South Africa
-date: "5 February 2025"
-
+date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
   html_document:
+    code_folding: show
     toc: true
+    toc_float: true
+    toc_collapsed: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r global_options, include = FALSE}
@@ -50,7 +52,7 @@ The following are required to execute the workflow:
 
 1. Installed R software (version 4.4.0 or higher) and Rstudio
 
-2. Installed R packages: "tidyr", "dplyr","rgbif", "stringr", "stringdist", "rWCVP", "purrr", "remotes", "rWCVPdata"
+2. Installed R packages: "tidyr", "dplyr","rgbif", "stringr", "stringdist", "rWCVP", "purrr", "lubridate", remotes", "rWCVPdata"
 
 3. A stable internet connection
 
@@ -58,7 +60,7 @@ The following are required to execute the workflow:
 
 R (version 4.0.0 or higher) and Rstudio need to be installed, which are freely available at: https://cran.r-project.org and https://www.rstudio.com/
 
-Nine R packages and their dependencies must be installed. Eight of these packages can be obtained through the R CRAN, and the remaining package "rWCVPdata" can be obtained from GitHub, using the package "remotes". 
+Ten R packages and their dependencies must be installed. Nine of these packages can be obtained through the R CRAN, and the remaining package "rWCVPdata" can be obtained from GitHub, using the package "remotes". 
 
 If executed the following code will load and, if required, install the packages.
 
@@ -66,7 +68,7 @@ Specify the packages required from R CRAN:
 
 ```{r}
 packages = c("tidyr", "dplyr",
-             "rgbif", "stringr", "stringdist", "rWCVP", "purrr")
+             "rgbif", "stringr", "stringdist", "lubridate", "rWCVP", "purrr")
 ```
 
 Install R CRAN packages (if required) and load:
@@ -83,7 +85,7 @@ package.check <- lapply(
 )
 ```
 
-Install and load "remote" package and install and load "rWCVPdata" package from GitHub
+Install and load "remotes" package and install and load "rWCVPdata" package from GitHub
 
 ```{r}
 remotes.check<-"remotes" %in% rownames(installed.packages()) 
@@ -114,7 +116,7 @@ D. Information on the format of the taxon names to be standardised
 
 Input A is provided by the user and can be downloaded from https://posa.sanbi.org/sanbi/Explore. The user saves the file in the `raw/` subfolder.
 
-Input B is provided by the user, and is manually entered under Step 2a in the script of the workflow in DMY (day, month, year) format. For example "05 December 2024". 
+Input B is provided by the user, and is manually entered under Step 2a in the script of the workflow in DMY (day, month, year) format. For example "05 December 2024", "5-12-2024", "05/12/2024". 
 
 Input C is provided by the user, who saves the file in the `raw/` subfolder. 
 
@@ -140,11 +142,11 @@ Below each step of the workflow is described.
 
 ## Step 1: Preparation of R environment
 
-The R environment is prepared by installing from the R CRAN and GitHub the R packages that need to be installed, and by loading these packages. The packages 'tidyr', 'dplyr', 'rgbif', 'stringr', 'stringdist', 'rWCVP', 'purrr', and 'remotes' are installed from the R CRAN. The 'remote' package is used to install from GitHub the 'rWCVPdata' package.
+The R environment is prepared by installing from the R CRAN and GitHub the R packages that need to be installed, and by loading these packages. The packages 'tidyr', 'dplyr', 'rgbif', 'stringr', 'stringdist', 'rWCVP', 'purrr', 'lubridate', and 'remotes' are installed from the R CRAN. The 'remotes' package is used to install from GitHub the 'rWCVPdata' package.
 
 ## Step 2: Preparation of data
 
-The BODATSA dataset (Input A) and list of taxon names that need to be standardised (Input C) are prepared for processing; and information on these datasets (Input C and D) is manually inputted into the script. 
+The BODATSA dataset (Input A) and list of taxon names that need to be standardised (Input C) are prepared for processing; and information on these datasets (Input C and D) is manually entered into the script. 
 
 ### Step 2a: Preparation of BODATSA dataset
 
@@ -152,9 +154,9 @@ In this step the downloaded BODATSA data is prepared to be used for taxon name s
 
 The BODATSA dataset is loaded and is assigned the name 'BODATSA'.
 
-Information on the date the BODATSA dataset was downloaded is manually inputted into the script in DMY (day, month, year) format. For example "05 December 2024". This information is assigned the name 'BODATSADate'. 
+Information on the date the BODATSA dataset was downloaded is manually entered into the script in DMY (day, month, year) format. For example "05 December 2024", "5/12/2024", "05-12-2024". If this information is not provided, or is not provided in the right format, then there will be an error, and the rest of the script will not run properly. This information is assigned the name 'BODATSADate'. 
 
-The BODATSA data are manipulated to address various issues. There are many instances where data are missing in the dataset, these are assigned 'NA'. There are small formatting inconsistencies in the scientific names in different parts of the dataset, and to standardise the formatting, "ssp." in the 'Rank1' column is replaced with "subsp.". In BODATSA, taxon names are split into several parts, with each part found in a different column. For example, there are separate columns for generic ('Genus') and specific epithets ('Sp1'). In this step the columns related to taxon names are joined so that there is a single column for canonical names, called 'canonicalName'; and a single column for scientific names, called 'scientificName'. For synonyms, BODATSA provides the accepted species name in the column 'Accepted'. In some instances the name in the 'Accepted' column is in a slighty different format from that in the newly created 'scientificName' column. This issue is addressed by identifying the incorrectly formatted species names in the 'Accepted' column, and replacing them with the correctly formatted name in the 'scientificName' column. The correctly formatted name in the 'scientificName' column is identified using fuzzy matching techniques. In this process names in the 'Accepted' column are only matched to names in the 'scientificName' column if they have the same binomial name. This ensures that the returned fuzzy matched names correspond to the appropriate species. The "jaccard" method from the 'stringdist' function is used for fuzzy matching, and the most similar match is selected. If this method identifies multiple equally similar matches, then the match with the highest number of equal components is selected. If multiple equally similar matches are still identified, then the 'lv' method from the 'stringdist' function is used, and the most similar match is selected. The corrected names are saved in the 'Accepted' column, the original data in the 'Accepted' column is saved in a column called 'AcceptedIssues' and records with this formatting issue are flagged in a column called 'synAccIssue'. The prepared BODATSA dataset is written to the `interim/` folder. The file is called 'BODATSAPrepared.csv'.
+The BODATSA data are manipulated to address various issues. There are many instances where data are missing in the dataset, these are assigned 'NA'. There are small formatting inconsistencies in the scientific names in different parts of the dataset, and to standardise the formatting, "ssp." in the 'Rank1' column is replaced with "subsp.". In BODATSA, taxon names are split into several parts, with each part found in a different column. For example, there are separate columns for generic ('Genus') and specific epithets ('Sp1'). In this step the columns related to taxon names are joined so that there is a single column for canonical names, called 'canonicalName'; and a single column for scientific names, called 'scientificName'. For synonyms, BODATSA provides the accepted species name in the column 'Accepted'. In some instances the name in the 'Accepted' column is in a slighty different format from that in the 'scientificName' column created in this step. This issue is addressed by identifying the incorrectly formatted species names in the 'Accepted' column, and replacing them with the correctly formatted name in the 'scientificName' column. The correctly formatted name in the 'scientificName' column is identified using fuzzy matching techniques. In this process, names in the 'Accepted' column are only matched to names in the 'scientificName' column if they have the same binomial name. This ensures that the returned fuzzy matched names correspond to the appropriate species. The "jaccard" method from the 'stringdist' function is used for fuzzy matching, and the most similar match is selected. If this method identifies multiple equally similar matches, then the match with the highest number of equal components is selected. If multiple equally similar matches are still identified, then the 'lv' method from the 'stringdist' function is used, and the most similar match is selected. The corrected names are saved in the 'Accepted' column, the original data in the 'Accepted' column is saved in a column called 'AcceptedIssues' and records with this formatting issue are flagged in a column called 'synAccIssue'. The prepared BODATSA dataset is written to the `interim/` folder. The file is called 'BODATSAPrepared.csv'.
 
 ### Step 2b: Preparation of list of taxon names
 
@@ -162,7 +164,7 @@ In this step the list of taxon names is prepared for processing.
 
 The dataset with the list of names is loaded, and named 'NamesDat'.
 
-Information on the format of the names that need to be standardised is manually inputted into the script. There are two options: 'canonical' and 'scientific'. These details are given the name 'NameType'.
+Information on the format of the names that need to be standardised is manually entered into the script. There are two options: 'canonical' and 'scientific'. If this information is not provided, or the provided information is not one of the accepted options, then there will be an error, and the rest of the script will not run properly. These details are given the name 'NameType'.
 
 The formatting of the spaces in the taxon names are standardised and double spaces are removed.
 
