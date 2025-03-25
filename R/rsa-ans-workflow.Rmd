@@ -9,11 +9,16 @@ author:
   - 7735, South Africa
   - $^2$Department of Zoology and Entomology, University of Pretoria, Pretoria, 0028, 
   - South Africa
-date: "5 February 2025"
+date: "`r format(Sys.time(), '%d %B %Y')`"
 
 output: 
   html_document:
+    code_folding: show
     toc: true
+    toc_float: true
+    toc_collapsed: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE, cache = FALSE}
@@ -52,15 +57,26 @@ Further details are available at the GitHub repository for the workflow: "https:
 
 The workflow has been created in R software, version 4.4.0 (R Core Team 2024). 
 
+
+
+**Manual inputs into script**
+
+Two pieces of information need to be manually entered into the script before it will run properly.
+
+1. In Step2a, the date that the BODATSA dataset was downloaded, must be manually entered into the script in day-month-year (DMY) format.
+
+2. In Step 2b, information on the format of the taxon names must be manually entered into the script. There are two accepted options: scientific or canonical.
+
 \newpage
 
 # Step 1: Preparation of the R environment
 
-#### Install and load R CRAN packages
+### Install and load R CRAN packages
+
 
 ```{r}
 packages = c("tidyr", "dplyr",
-             "rgbif", "stringr", "stringdist", "rWCVP", "purrr") # seven packages are required
+             "rgbif", "stringr", "stringdist", "rWCVP", "purrr", "lubridate") # eight packages are required
 ```
 
 ```{r}
@@ -75,7 +91,7 @@ package.check <- lapply(
 )
 ```
 
-#### Install and load "remote" package from R CRAN, and install and load "rWCVPdata" package from GitHub
+### Install and load "remotes" package from R CRAN, and install and load "rWCVPdata" package from GitHub
 
 ```{r}
 remotes.check<-"remotes" %in% rownames(installed.packages()) 
@@ -90,51 +106,63 @@ require('rWCVPdata') # load package from GitHub
 
 ## Step 2a: Preparation of BODATSA dataset
 
-#### Load dataset from BODATSA
+### Load dataset from BODATSA
 
 ```{r}
 BODATSA<-read.csv("data\\raw\\BODATSA.csv") # file must be named "BODATSA.csv"
 ```
 
-#### Provide required information on BODATSA
+### Provide required information on BODATSA
+
+In the quotation marks in the chunk of code below, type in the date the BODATSA data were downloaded in day-month-year format
 
 ```{r}
-BODATSADate<-"02 December 2024" # stipulate the date BODATSA was downloaded in the format shown here
+Userdate<-"" # In the quotation marks, type in the date in day-month-year format
 ```
 
-#### View header of data 
+Check to see if information on the date that BODATSA was downloaded has been provided in the right format. If there is an error, please try again to provide this information.
+
+```{r}
+FormatDate<-suppressWarnings(format(dmy(Userdate), '%d %B %Y'))
+if (is.na(FormatDate)==TRUE) {stop("Date was not entered, or was not in the correct format. Please try again")    
+  } else { 
+    BODATSADate<-FormatDate
+  }
+```
+
+### View header of data 
 
 ```{r}
 head(BODATSA) 
 ```
 
-#### Assign NA to records where data are missing
+### Assign NA to records where data are missing
 
 ```{r}
 BODATSA[BODATSA == ""] <- NA 
 ```
 
-#### In "Rank1" column replace "ssp." with "subsp."
+### In "Rank1" column replace "ssp." with "subsp."
 
 ```{r}
 BODATSA<-BODATSA %>%
   mutate(Rank1=replace(Rank1, Rank1=="ssp.", "subsp."))
 ```
 
-#### Add a column with the canonical names of the taxa to BODATSA dataset
+### Add a column with the canonical names of the taxa to BODATSA dataset
 
 ```{r}
 BODATSA <- BODATSA %>% unite("canonicalName", c(Genus, Sp1, Rank1, Sp2, 
                                                 Rank2, Sp3), na.rm = TRUE, sep = " ", remove = FALSE)
 ```
 
-#### Add a column with the scientific names of the taxa to BODATSA dataset
+### Add a column with the scientific names of the taxa to BODATSA dataset
 
 ```{r}
 BODATSA <- BODATSA %>% unite("scientificName", c(Genus, Sp1, Author1, Rank1, Sp2, Author2, Rank2, Sp3, Author3), na.rm = TRUE, sep = " ", remove = FALSE)
 ```
 
-#### Correct and flag incorrectly formatted names in the "Accepted" column
+### Correct and flag incorrectly formatted names in the "Accepted" column
 
 Identify the names in the "Accepted" column that are incorrectly formatted
 
@@ -212,7 +240,7 @@ Delete unnecessary column
 BODATSA$fullScientificName<-NULL
 ```
 
-#### Write to file
+### Write to file
 
 ```{r}
 write.csv(BODATSA, "data//interim//BODATSAPrepared.csv", row.names = FALSE)
@@ -220,19 +248,34 @@ write.csv(BODATSA, "data//interim//BODATSAPrepared.csv", row.names = FALSE)
 
 ## Step 2b: Preparation of list of taxon names
 
-#### Load list of names for standardisation
+### Load list of names for standardisation
 
 ```{r}
 NamesDat<-read.csv("data\\raw\\OriginalNames.csv") # file must be named "OriginalNames.csv"
 ```
 
-#### Provide required information on list of names for standardisation
+### Provide required information on list of names for standardisation
+
+In the quotation marks in the chunk of code below, type in the format of the taxon names: either 'canonical' or 'scientific'
 
 ```{r}
-NameType<-"canonical" # here stipulate the format of the taxon names: 'canonical' or 'scientific'
+UserNameType<-"" # In the quotation marks, type in either 'canonical' or 'scientific'
 ```
 
-#### View header of data and get the number of taxa
+Check to see if the information on the format of the taxon names has been provided and is one of the possible options. If there is an error, please try again to provide this information.
+
+```{r}
+NameTypeFormat<-ifelse(UserNameType == "scientific", "scientific",
+                 ifelse(UserNameType == "Scientific", "scientific",
+                        ifelse(UserNameType == "canonical","canonical",
+                               ifelse(UserNameType == "Canonical","canonical", NA))))
+if (is.na(NameTypeFormat)==TRUE) {stop("Format of the taxon names was not entered, or was not one of the accepted options. Please try again")    
+  } else { 
+    NameType<-NameTypeFormat
+  }
+```
+
+### View header of data and get the number of taxa
 
 ```{r}
 head(NamesDat) # Look at the first five rows of the data.
@@ -240,7 +283,7 @@ head(NamesDat) # Look at the first five rows of the data.
 length(NamesDat$verbatimScientificName) # how many taxa are in the dataset
 ```
 
-#### Standardise the spacing formats 
+### Standardise the spacing formats 
 
 ```{r}
 NamesDat<-data.frame(verbatimScientificName = str_replace_all(
@@ -251,7 +294,7 @@ NamesDat$verbatimScientificName<-str_squish(NamesDat$verbatimScientificName) # r
 
 # Step 3: Match all taxon names to GBIF backbone
 
-#### Match all names to GBIF backbone, and get canonical names and higher taxonomic information
+### Match all names to GBIF backbone, and get canonical names and higher taxonomic information
 
 ```{r}
 GBIFCnames<-c("usageKey","scientificName", "canonicalName", "rank",          
@@ -285,7 +328,7 @@ for(j in 1:m){ # loop through the taxon names and check each taxon name against 
 }
 ```
 
-#### Write interim output to file 
+### Write interim output to file 
 
 ```{r}
 GBIFInterim<-GBIFMatch
@@ -299,7 +342,7 @@ write.csv(GBIFInterim, "data//interim//GBIFInterim.csv", row.names = FALSE)
 unique(GBIFMatch$kingdom) # list of kingdoms in the output
 ```
 
-#### Create a plants subset
+### Create a plants subset
 
 ```{r}
 PlantDat<-GBIFMatch %>% filter(kingdom == "Plantae")  # create subset of plants
@@ -308,7 +351,7 @@ PlantDat<-PlantDat %>% select(verbatimScientificName:family) # only keep the rel
 names(PlantDat) # names of the columns
 ```
 
-#### Create a non-plants subset
+### Create a non-plants subset
 
 ```{r}
 GBIFMatch<-GBIFMatch %>% filter(kingdom != "Plantae"|is.na(kingdom)) # create a non-plants subset 
@@ -316,7 +359,7 @@ GBIFMatch<-GBIFMatch %>% filter(kingdom != "Plantae"|is.na(kingdom)) # create a 
 
 # Step 5: Assess and flag issues for non-plant taxa
 
-#### Assess issues
+### Assess issues
 
 ```{r}
 head(GBIFMatch) # look at the first 5 rows of the dataset
@@ -346,7 +389,7 @@ GBIFMatch %>%
   count()
 ```
 
-#### Flag taxonomic issues
+### Flag taxonomic issues
 
 Flag synonyms
 
@@ -415,14 +458,14 @@ GBIFMatch = GBIFMatch %>%
 
 # Step 6: Preparation of output for non-plant taxa matched to GBIF
 
-#### Add column with the source of the scientific name, the date accessed, and web-link
+### Add column with the source of the scientific name, the date accessed, and web-link
 
 ```{r}
 GBIFMatch$scientificNameSource<-ifelse(GBIFMatch$unmatched.flag == TRUE, 
                                        "NA", paste0("GBIF", " ", "(", format(Sys.Date(), "%d %B %Y"),")", " ","https://www.gbif.org/species/", GBIFMatch$usageKey))
 ```
 
-#### Remove unwanted columns
+### Remove unwanted columns
 
 ```{r}
 GBIFMatch<-GBIFMatch %>% select(!(rank:usageKey)) # only keep the relevant columns
@@ -431,7 +474,7 @@ names(GBIFMatch) # names of the columns
 
 # Step 7: Match plant names to BODATSA backbone
 
-#### Merge plant dataset and BODATSA
+### Merge plant dataset and BODATSA
 
 Merge based on canonical name
 
@@ -452,14 +495,14 @@ if(NameType == "scientific"){
 }
 ```
 
-#### Replace synonyms in "scientificName" column with accepted names from "Accepted" column
+### Replace synonyms in "scientificName" column with accepted names from "Accepted" column
 
 ```{r}
 BODATSAMatch<-BODATSAMatch %>%
   mutate(scientificName = replace(scientificName, is.na(Accepted)==FALSE, Accepted[is.na(Accepted)==FALSE]))
 ```
 
-#### Identify taxa with multiple matches
+### Identify taxa with multiple matches
 
 ```{r}
 BODATSAMatch = BODATSAMatch %>% 
@@ -467,7 +510,7 @@ BODATSAMatch = BODATSAMatch %>%
   mutate(multipleMatches = n() > 1) # TRUE if there were multiple matches
 ```
 
-#### Resolve, if possible, names for taxa with multiple matches
+### Resolve, if possible, names for taxa with multiple matches
 
 Take the match that is an accepted scientific name, if there is one
 
@@ -477,7 +520,7 @@ matchesFilt<-BODATSAMatch%>% filter(!verbatimScientificName %in% matchesMult$ver
 BODATSAMatch<-rbind(matchesMult, matchesFilt) # bind the subsets together
 ```
 
-#### Address taxa with multiple matches that could not be resolved
+### Address taxa with multiple matches that could not be resolved
 
 Flag these taxa 
 
@@ -495,7 +538,7 @@ BODATSAMatch<-BODATSAMatch %>%
   summarise(across(everything(), ~paste0(unique(.), collapse = "|")))
 ```
 
-#### Write interim output to file 
+### Write interim output to file 
 
 ```{r}
 BODATSAInterim<-BODATSAMatch
@@ -505,7 +548,7 @@ write.csv(BODATSAInterim, "data//interim//BODATSAInterim.csv", row.names = FALSE
 
 # Step 8: Assess and flag issues for plants
 
-#### Assess issues
+### Assess issues
 
 Look at what results look like
 
@@ -545,7 +588,7 @@ BODATSAMatch %>%
   count()  # TRUE for taxa with unresolved multiple matches
 ```
 
-#### Flag taxonomic issues
+### Flag taxonomic issues
 
 Flag synonyms
 
@@ -612,14 +655,14 @@ BODATSAMatch = BODATSAMatch %>%
 
 # Step 9: Extract unmatched plants
 
-#### Create a subset of unmatched plants
+### Create a subset of unmatched plants
 
 ```{r}
 PlantUnMatched<-BODATSAMatch %>% filter(unmatched.flag == "TRUE") # subset of the unmatched plants
 PlantUnMatched<-PlantUnMatched %>% select(verbatimScientificName:family) # remove unwanted columns
 ```
 
-#### Create a subset of matched plants
+### Create a subset of matched plants
 
 ```{r}
 BODATSAMatch<-BODATSAMatch%>% filter(unmatched.flag == FALSE) # subset of matched plants
@@ -627,13 +670,13 @@ BODATSAMatch<-BODATSAMatch%>% filter(unmatched.flag == FALSE) # subset of matche
 
 # Step 10: Preparation of output for plants matched to BODATSA 
 
-#### Add column with the source of the scientific name, the date that BODATSA was downloaded, and a web-link
+### Add column with the source of the scientific name, the date that BODATSA was downloaded, and a web-link
 
 ```{r}
 BODATSAMatch$scientificNameSource<-paste0("BODATSA", " ", "(", BODATSADate,")"," ", "http://posa.sanbi.org/")
 ```
 
-#### Remove unwanted columns
+### Remove unwanted columns
 
 ```{r}
 BODATSAMatch <- BODATSAMatch %>% ungroup() # ungroup columns
@@ -643,7 +686,7 @@ names(BODATSAMatch) # names of the columns
 
 # Step 11: Match unmatched plant names to WCVP backbone
 
-#### Match if verbatim names are canonical (without author information)
+### Match if verbatim names are canonical (without author information)
 
 ```{r}
 if(NameType == "canonical"){
@@ -655,7 +698,7 @@ matches <- wcvp_match_names(PlantUnMatched,
 }
 ```
 
-#### Match if verbatim names are scientific (with author information)
+### Match if verbatim names are scientific (with author information)
 
 ```{r}
 if(NameType == "scientific"){
@@ -667,7 +710,7 @@ if(NameType == "scientific"){
    }
 ```
 
-#### Get the accepted scientific name for each taxon
+### Get the accepted scientific name for each taxon
 
 ```{r}
 u<-which(wcvp_names$plant_name_id %in% matches$wcvp_accepted_id) # which rows in the WCVP dataset have the ids of the accepted taxon names
@@ -677,7 +720,7 @@ matches<-matches%>% select((c(verbatimScientificName:wcvp_accepted_id, scientifi
 colnames(matches)[colnames(matches) == "family.x"] <- "family" # rename column
 ```
 
-#### Resolve, if possible, taxon names with multiple matches
+### Resolve, if possible, taxon names with multiple matches
 
 If the scientific name with author information is available take the match with that author
 
@@ -704,7 +747,7 @@ matchesFilt<-matches%>% filter(!verbatimScientificName %in% matchesMult$verbatim
 matches<-rbind(matchesMult, matchesFilt) # bind the two datasets together
 ```
 
-#### Address taxa with multiple matches that could not be resolved
+### Address taxa with multiple matches that could not be resolved
 
 Flag these taxa 
 
@@ -722,7 +765,7 @@ WCVPMatch<-matches %>%
   summarise(across(everything(), ~paste0(unique(.), collapse = "|")))
 ```
 
-#### Write interim output to file 
+### Write interim output to file 
 
 ```{r}
 WCVPInterim<- WCVPMatch
@@ -732,7 +775,7 @@ write.csv(WCVPInterim, "data//interim//WCVPInterim.csv", row.names = FALSE)
 
 # Step 12: Assess and flag issues for plants matched to WCVP
 
-#### Assess issues
+### Assess issues
 
 ```{r}
 head(WCVPMatch) # Look at the first 5 rows of the data
@@ -778,7 +821,7 @@ WCVPMatch %>%
   count()
 ```
 
-#### Flag taxonomic issues
+### Flag taxonomic issues
 
 Flag synonyms
 
@@ -850,14 +893,14 @@ WCVPMatch = WCVPMatch %>%
 
 # Step 13: Preparation of output for plants matched to WCVP
 
-#### Add column with the source of the scientific name, date accessed, and web-link
+### Add column with the source of the scientific name, date accessed, and web-link
 
 ```{r}
 WCVPMatch$scientificNameSource<-ifelse(WCVPMatch$unmatched.flag == "TRUE", 
                                        "NA", paste0("POWO", " ", "(", format(Sys.Date(), "%d %B %Y"),")", " ","https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:", WCVPMatch$wcvp_ipni_id))
 ```
 
-#### Remove unwanted columns
+### Remove unwanted columns
 
 ```{r}
 WCVPMatch <- WCVPMatch %>% ungroup() # ungroup columns
@@ -867,7 +910,7 @@ names(WCVPMatch) # names of the columns
 
 # Step 14: Merge
 
-#### Prepare the datasets
+### Prepare the datasets
 
 Standardise formating
 
@@ -907,25 +950,25 @@ PlantMatch = PlantMatch %>%
   mutate(verbatimNameDuplicate.flag = n() > 1) # TRUE for duplicates
 ```
 
-#### Bind the datasets 
+### Bind the datasets 
 
 ```{r}
 AllMatch<-rbind(GBIFMatch, PlantMatch) # Bind all the datasets together
 ```
 
-#### Check if the number of taxa in the output dataset is that same as in the original dataset
+### Check if the number of taxa in the output dataset is that same as in the original dataset
 
 ```{r}
 length(AllMatch$verbatimScientificName) == length(NamesDat$verbatimScientificName) # should be TRUE
 ```
 
-#### Reorder dataset, so that the taxa are in the same order as they were in the input file
+### Reorder dataset, so that the taxa are in the same order as they were in the input file
 
 ```{r}
 AllMatch<-AllMatch[match(NamesDat$verbatimScientificName, AllMatch$verbatimScientificName),]
 ```
 
-#### Write final output to file
+### Write final output to file
 
 ```{r}
 write.csv(AllMatch, "data//processed//Taxon_names_standardised.csv", row.names = FALSE)
