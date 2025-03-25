@@ -2,19 +2,21 @@
 title: |
   | Description:
   | outputs of an automated workflow to standardise taxon names for South African alien species lists 
-
 author:
   - Katelyn T. Faulkner$^{1,2}$
-
   - $^1$South African National Biodiversity Institute, Kirstenbosch Research Centre, Cape Town, 
   - 7735, South Africa
   - $^2$Department of Zoology and Entomology, University of Pretoria, Pretoria, 0028, 
   - South Africa
-date: "5 February 2025"
-
+date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
   html_document:
+    code_folding: show
     toc: true
+    toc_float: true
+    toc_collapsed: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r global_options, include = FALSE}
@@ -42,6 +44,8 @@ In addition to standardising a list of taxon names based on the three taxonomic 
 
 This document describes the outputs of the workflow. 
 
+Global biodiversity data standards as set by the Darwin Core are followed as far as is possible (descriptions of the Darwin Core fields are available at: https://dwc.tdwg.org/terms/).
+
 # Final output
 
 The final output is saved in the `processed/` folder as a csv named 'Taxon_names_standardised.csv'. The final output contains 17 columns.
@@ -64,7 +68,7 @@ Type: Character (value of NA is possible if the taxon is not available on GBIF)
 
 ### kingdom
 
-Description: The full scientific name of the kingdom in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the kingdom in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:kingdom
 
@@ -72,7 +76,7 @@ Type: Factor (value of NA is possible if the taxon is not available on GBIF)
 
 ### phylum
 
-Description: The full scientific name of the phylum in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the phylum in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:phylum
 
@@ -80,7 +84,7 @@ Type: Factor (value of NA is possible if the taxon is not available on GBIF)
 
 ### class
 
-Description: The full scientific name of the class in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the class in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:class
 
@@ -88,7 +92,7 @@ Type: Factor (value of NA is possible if the value is not available on GBIF)
 
 ### order
 
-Description: The full scientific name of the order in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the order in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:order
 
@@ -96,7 +100,7 @@ Type: Factor (value of NA is possible if the value is not available on GBIF)
 
 ### family
 
-Description: The full scientific name of the family in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the family in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:family
 
@@ -136,7 +140,7 @@ Type: Factor with two levels (TRUE and FALSE)
 
 ### possibleError.flag
 
-Description: If any of unmatched.flag, uncertain.flag or doubtful.flag are TRUE (i.e, TRUE). The outputs for these taxon names should be examined manually.
+Description: If any of unmatched.flag, uncertain.flag or doubtful.flag are TRUE (i.e, TRUE). The outputs for these taxon names should be examined manually
 
 Type: Factor with two levels (TRUE and FALSE)
 
@@ -160,11 +164,11 @@ Type: Factor with two levels (TRUE and FALSE)
 
 ### scientificNameSource
 
-Description: The taxonomic backbone used for the scientificName, with the date it was accessed and a web-link as appropriate.
+Description: The taxonomic backbone used for the scientificName, with the date it was accessed and a web-link as appropriate
 
 Type: Factor with three levels (BODATSA, POWO, GBIF) (value of NA is possible if the verbatimScientificName could not be matched to a name in the relevant taxonomic backbone. Can be several values separated by a pipe delimiter if verbatimScientificName was a taxonomic homonym and was matched to multiple names in the relevant taxonomic backbone)
 
-Value and definition
+**Value and definition**
 
 BODATSA: Botanical Database of Southern Africa 
 
@@ -180,7 +184,7 @@ The output is saved in the `interim/` folder as a csv named 'GBIFInterim.csv'. T
 
 ### verbatimScientificName
   
-Description: the taxon name as provided by the user
+Description: The taxon name as provided by the user
 
 Darwin Core: dwc:verbatimScientificName
 
@@ -194,7 +198,7 @@ Type: Character (value of NA is possible if the taxon is not available on GBIF)
 
 ### kingdom
 
-Description: The full scientific name of the kingdom in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the kingdom in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:kingdom
 
@@ -202,7 +206,7 @@ Type: Factor (value of NA is possible if the taxon is not available on GBIF)
 
 ### phylum
 
-Description: The full scientific name of the phylum in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the phylum in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:phylum
 
@@ -210,7 +214,7 @@ Type: Factor (value of NA is possible if the taxon is not available on GBIF)
 
 ### class
 
-Description: The full scientific name of the class in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the class in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:class
 
@@ -218,7 +222,7 @@ Type: Factor (value of NA is possible if the value is not available on GBIF)
 
 ### order
 
-Description: The full scientific name of the order in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the order in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:order
 
@@ -226,7 +230,7 @@ Type: Factor (value of NA is possible if the value is not available on GBIF)
 
 ### family
 
-Description: The full scientific name of the family in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the family in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:family
 
@@ -258,7 +262,7 @@ Description: Indicates if the verbatimScientificName is an accepted scientific n
 
 Type: Factor with three levels (ACCEPTED, SYNONYM, DOUBTFUL. Value of NA is possible)
 
-Value and definition
+**Value and definition**
 
 ACCEPTED: The verbatimScientificName is an accepted scientificName
 
@@ -274,11 +278,11 @@ The name is a species or and infra-species with a parent genus or species consid
 
 ### matchtype
 
-Description: How the verbatimScientificName was matched to the scientificName.
+Description: How the verbatimScientificName was matched to the scientificName
 
 Type: Factor with four levels (EXACT, FUZZY, HIGHERRANK, NONE)
 
-Value and definition
+**Value and definition**
 
 EXACT: verbatimScientificName was matched to the scientificName through an exact match
 
@@ -302,7 +306,7 @@ The output is saved in the `interim/` folder as a csv named 'BODATSAInterim.csv'
 
 ### verbatimScientificName
   
-Description: the taxon name as provided by the user
+Description: The taxon name as provided by the user
 
 Darwin Core: dwc:verbatimScientificName
 
@@ -316,7 +320,7 @@ Type: Character (value of NA is possible if the taxon is not available on GBIF)
 
 ### kingdom
 
-Description: The full scientific name of the kingdom in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the kingdom in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:kingdom
 
@@ -324,7 +328,7 @@ Type: Factor (value of NA is possible if the taxon is not available on GBIF)
 
 ### phylum
 
-Description: The full scientific name of the phylum in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the phylum in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:phylum
 
@@ -332,7 +336,7 @@ Type: Factor (value of NA is possible if the taxon is not available on GBIF)
 
 ### class
 
-Description: The full scientific name of the class in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the class in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:class
 
@@ -340,7 +344,7 @@ Type: Factor (value of NA is possible if the value is not available on GBIF)
 
 ### order
 
-Description: The full scientific name of the order in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the order in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:order
 
@@ -348,7 +352,7 @@ Type: Factor (value of NA is possible if the value is not available on GBIF)
 
 ### family
 
-Description: The full scientific name of the family in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the family in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:family
 
@@ -356,7 +360,7 @@ Type: Factor (value of NA is possible if the taxon is not available on GBIF)
 
 ### Family
 
-Description: The full scientific name of the family in which the taxon is classified, as per BODATSA.
+Description: The full scientific name of the family in which the taxon is classified, as per BODATSA
 
 Type: Factor (value of NA is possible if the verbatimScientificName could not be matched to a name in BODATSA)
 
@@ -370,29 +374,29 @@ Type: Character (value of NA is possible if the verbatimScientificName could not
 
 ### Genus
 
-Description: The generic epithet of the verbatimScientificName, as per BODATSA.
+Description: The generic epithet of the verbatimScientificName, as per BODATSA
 
 Type: Factor (value of NA is possible if the verbatimScientificName could not be matched to a name in BODATSA)
 
 ### Sp1
 
-Description: The specific epithet of the verbatimScientificName, as per BODATSA.
+Description: The specific epithet of the verbatimScientificName, as per BODATSA
 
 Type: Character (value of NA is possible if the verbatimScientificName could not be matched to a name in BODATSA)
 
 ### Author1
 
-Description: Authorship of the binomial name of verbatimScientificName, as per BODATSA.
+Description: Authorship of the binomial name of verbatimScientificName, as per BODATSA
 
 Type: Character (value of NA is possible if the verbatimScientificName could not be matched to a name in BODATSA. Can be several values separated by a pipe delimiter if verbatimScientificName was a taxonomic homonym and was matched to multiple names in relevant taxonomic backbone)
 
 ### Rank1
 
-Description: Indicates if verbatimScientificName is a sub-specific entity.
+Description: Indicates if verbatimScientificName is a sub-specific entity
 
 Type: Factor with three levels (subsp., var., f.. Value of NA is possible if the verbatimScientificName could not be matched to a name in BODATSA or if the verbatimScientificName is not a sub-specific entity)
 
-Value and definition:
+**Value and definition**
 
 subsp.: subspecies
 
@@ -408,17 +412,17 @@ Type: Character (value of NA is possible if the verbatimScientificName could not
 
 ### Author2
 
-Description: Authorship of the first sub-specific epithet of verbatimScientificName, as per BODATSA.
+Description: Authorship of the first sub-specific epithet of verbatimScientificName, as per BODATSA
 
 Type: Character (value of NA is possible if the verbatimScientificName could not be matched to a name in BODATSA or if the verbatimScientificName is not a sub-specific entity)
 
 ### Rank2
 
-Description: Indicates if verbatimScientificName contains a second sub-specific epithet.
+Description: Indicates if verbatimScientificName contains a second sub-specific epithet
 
 Type: Factor with two levels (var., f.. Value of NA is possible if the verbatimScientificName could not be matched to a name in BODATSA or if the verbatimScientificName does not contain a second sub-specific epithet)
 
-Value and definition:
+**Value and definition**
 
 var.: variety
 
@@ -432,7 +436,7 @@ Type: Character (value of NA is possible if the verbatimScientificName could not
 
 ### Author3
 
-Description: Authorship of the second sub-specific epithet of verbatimScientificName, as per BODATSA.
+Description: Authorship of the second sub-specific epithet of verbatimScientificName, as per BODATSA
 
 Type: Character (value of NA is possible if the verbatimScientificName could not be matched to a name in BODATSA or if the verbatimScientificName does not contain a second sub-specific epithet)
 
@@ -440,9 +444,9 @@ Type: Character (value of NA is possible if the verbatimScientificName could not
 
 Description: Indicates whether the verbatimScientificName is an accepted scientific name
 
-Type: Factor (Levels include: acc, inc, misap, syn, unc, genlv. Value of NA is possible. Can be several values separated by a pipe delimiter if verbatimScientificName was a taxonomic homonym and was matched to multiple names in the  relevant taxonomic backbone)
+Type: Factor (levels include: acc, inc, misap, syn, unc, genlv. Value of NA is possible. Can be several values separated by a pipe delimiter if verbatimScientificName was a taxonomic homonym and was matched to multiple names in the  relevant taxonomic backbone)
 
-Value and definition:
+**Value and definition**
 
 acc: verbatimScientificName is currently the accepted name
 
@@ -464,7 +468,7 @@ Type: Character (value of NA is possible if the verbatimScientificName could not
 
 ### Ecology
 
-Description: Ecological details for the taxon. 
+Description: Ecological details for the taxon
 
 Type: Character (value of NA is possible)
 
@@ -514,7 +518,7 @@ Type: Character (value of NA is possible if the taxon is not available on GBIF)
 
 ### kingdom
 
-Description: The full scientific name of the kingdom in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the kingdom in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:kingdom
 
@@ -522,7 +526,7 @@ Type: Factor (value of NA is possible if the taxon is not available on GBIF)
 
 ### phylum
 
-Description: The full scientific name of the phylum in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the phylum in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:phylum
 
@@ -530,7 +534,7 @@ Type: Factor (value of NA is possible if the taxon is not available on GBIF)
 
 ### class
 
-Description: The full scientific name of the class in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the class in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:class
 
@@ -538,7 +542,7 @@ Type: Factor (value of NA is possible if the value is not available on GBIF)
 
 ### order
 
-Description: The full scientific name of the order in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the order in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:order
 
@@ -546,7 +550,7 @@ Type: Factor (value of NA is possible if the value is not available on GBIF)
 
 ### family
 
-Description: The full scientific name of the family in which the taxon is classified, as per GBIF.
+Description: The full scientific name of the family in which the taxon is classified, as per GBIF
 
 Darwin Core: dwc:family
 
@@ -554,7 +558,7 @@ Type: Factor (value of NA is possible if the taxon is not available on GBIF)
 
 ### match_type
 
-Description: How the verbatimScientificName was matched to the scientificName. Such as through an exact match or fuzzy match (e.g., there were spelling mistakes), and whether the author was considered. 
+Description: How the verbatimScientificName was matched to the scientificName. Such as through an exact match or fuzzy match (e.g., there were spelling mistakes), and whether the author was considered
 
 Type: Factor (levels include: Exact, Exact (without author), Fuzzy (edit distance), Fuzzy (phonetic). Value of NA is possible if no match was found)
 
@@ -566,13 +570,13 @@ Type: Factor with two levels (TRUE and FALSE)
 
 ### match_similarity
 
-Description: The similarity between the verbatimScientificName and the name to which it was matched. The value will be 1 if exact matching is used, but will be < 1 if fuzzy matching is used.
+Description: The similarity between the verbatimScientificName and the name to which it was matched. The value will be 1 if exact matching is used, but will be < 1 if fuzzy matching is used
 
 Type: Numeric (ranges between 0 and 1, with 1 being 100% similarity. Value of NA is possible if no match was found. Can be several values separated by a pipe delimiter if verbatimScientificName was a taxonomic homonym and was matched to multiple names in the relevant taxonomic backbone)
 
 ### match_edit_distance
 
-Description: The number of edits required (additions and subtractions) to transform the verbatimScientificName into the name to which it was matched. The value will be 0 if exact matching is used, but will be > 0 if fuzzy matching is used.
+Description: The number of edits required (additions and subtractions) to transform the verbatimScientificName into the name to which it was matched. The value will be 0 if exact matching is used, but will be > 0 if fuzzy matching is used
 
 Type: Numeric (value >= 0. Value of NA is possible if no match was found. Can be several values separated by a pipe delimiter if verbatimScientificName was a taxonomic homonym and was matched to multiple names in the relevant taxonomic backbone)
 
@@ -584,13 +588,13 @@ Type: Character (can be several values separated by a pipe delimiter if verbatim
 
 ### wcvp_name
 
-Description: The name of the taxon as it appears in WCVP without authorship or date information. This is not necessarily the accepted scientific name.
+Description: The name of the taxon as it appears in WCVP without authorship or date information. This is not necessarily the accepted scientific name
 
 Type: Character (can be several values separated by a pipe delimiter if verbatimScientificName was a taxonomic homonym and was matched to multiple names in the relevant taxonomic backbone)
 
 ### wcvp_authors
 
-Description: Authorship information for wcvp_name.
+Description: Authorship information for wcvp_name
 
 Type: Character (can be several values separated by a pipe delimiter if verbatimScientificName was a taxonomic homonym and was matched to multiple names in the relevant taxonomic backbone)
 
@@ -606,7 +610,7 @@ Description: Indicates if the verbatimScientificName is an accepted scientific n
 
 Type: Factor (levels include: Accepted, Synonym, Invalid, Illegitimate, Missapplied. Value of NA is possible. Can be several values separated by a pipe delimiter if verbatimScientificName was a taxonomic homonym and was matched to multiple names in relevant taxonomic backbone)
 
-Value and definition
+**Value and definition**
 
 Accepted: The verbatimScientificName is an accepted scientificName
 
@@ -620,7 +624,7 @@ Missapplied: The verbatimScientificName has mistakenly been given to a taxon
 
 ### wcvp_homotypic
 
-Description: If the verbatimScientificName is homotypic synonym (i.e., TRUE)
+Description: If the verbatimScientificName is a homotypic synonym (i.e., TRUE)
 
 Type: Factor with two levels (TRUE or FALSE. Value of NA is possible. Can be several values separated by a pipe delimiter if verbatimScientificName was a taxonomic homonym and was matched to multiple names in relevant taxonomic backbone)
 
@@ -664,7 +668,7 @@ The output is saved in the `interim/` folder and is a csv named 'BODATSAPrepared
 
 ### Family
 
-Description: The full scientific name of the family in which the taxon is classified, as per BODATSA.
+Description: The full scientific name of the family in which the taxon is classified, as per BODATSA
 
 Type: Factor
 
@@ -682,29 +686,29 @@ Type: Character
 
 ### Genus
 
-Description: The generic epithet, as per BODATSA.
+Description: The generic epithet, as per BODATSA
 
 Type: Factor (value of NA is possible)
 
 ### Sp1
 
-Description: The specific epithet, as per BODATSA.
+Description: The specific epithet, as per BODATSA
 
 Type: Character (value of NA is possible)
 
 ### Author1
 
-Description: Authorship of the binomial name, as per BODATSA.
+Description: Authorship of the binomial name, as per BODATSA
 
 Type: Character (value of NA is possible)
 
 ### Rank1
 
-Description: Indicates if the taxon is a sub-specific entity.
+Description: Indicates if the taxon is a sub-specific entity
 
 Type: Factor with three levels (subsp., var., f.. Value of NA is possible)
 
-Value and definition:
+**Value and definition**
 
 subsp.: subspecies
 
@@ -726,11 +730,11 @@ Type: Character (value of NA is possible)
 
 ### Rank2
 
-Description: Indicates if there is second sub-specific epithet.
+Description: Indicates if there is second sub-specific epithet
 
 Type: Factor with two levels (var., f.. Value of NA is possible)
 
-Value and definition:
+**Value and definition**
 
 var.: variety
 
@@ -744,7 +748,7 @@ Type: Character (value of NA is possible)
 
 ### Author3
 
-Description: Authorship of the second sub-specific epithet, as per BODATSA.
+Description: Authorship of the second sub-specific epithet, as per BODATSA
 
 Type: Character (value of NA is possible)
 
@@ -754,19 +758,19 @@ Description: Indicates if the taxon name (see canonicalName and scientificName) 
 
 Type: Factor (levels include: acc, inc, misap, syn, unc, genlv. Value of NA is possible)
 
-Value and definition:
+**Value and definition**
 
-acc: verbatimScientificName is currently the accepted name
+acc: taxon name is currently the accepted name
 
-syn: verbatimScientificName is currently a synonym
+syn: taxon name is currently a synonym
 
-inc: the verbatimScientificName includes lower ranks
+inc: taxon name includes lower ranks
 
-misap: the verbatimScientificName was misapplied in terms of its concept to a taxon
+misap: taxon name was misapplied in terms of its concept to a taxon
 
-unc: verbatimScientificName is of uncertain application
+unc: taxon name is of uncertain application
 
-genlv: verbatimScientificName is at the genus level only
+genlv: taxon name is at the genus level only
 
 ### AcceptedIssues
 
@@ -776,7 +780,7 @@ Type: Character (value of NA is possible)
 
 ### Ecology
 
-Description: Ecological details for the taxon. 
+Description: Ecological details for the taxon
 
 Type: Character (value of NA is possible)
 
