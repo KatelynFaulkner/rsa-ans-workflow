@@ -21,7 +21,7 @@ The following are required to execute the workflow:
 
 1. Installed R software (version 4.4.0 or higher) and Rstudio
 
-2. Installed R packages: "tidyr", "dplyr","rgbif", "stringr", "stringdist", "rWCVP", "purrr", "remotes", "rWCVPdata"
+2. Installed R packages: "tidyr", "dplyr","rgbif", "stringr", "stringdist", "rWCVP", "purrr", "lubridate", "remotes", "rWCVPdata"
 
 3. A stable internet connection
 
@@ -31,7 +31,7 @@ R (version 4.0.0 or higher) and Rstudio need to be installed, which are freely a
 
 ### Installing the required packages
 
-Nine R packages and their dependencies must be installed. Eight of these packages can be obtained through the R CRAN, and the remaining package "rWCVPdata" can be obtained from GitHub, using the package "remotes". 
+Ten R packages and their dependencies must be installed. Nine of these packages can be obtained through the R CRAN, and the remaining package "rWCVPdata" can be obtained from GitHub, using the package "remotes". 
 
 If executed the following code will load and, if required, install the packages.
 
@@ -39,7 +39,7 @@ Specify the packages required from R CRAN:
 
 ```{r}
 packages = c("tidyr", "dplyr",
-             "rgbif", "stringr", "stringdist", "rWCVP", "purrr")
+             "rgbif", "stringr", "stringdist", "rWCVP", "purrr", "lubridate")
 ```
 
 Install R CRAN packages (if required) and load:
@@ -56,7 +56,7 @@ package.check <- lapply(
 )
 ```
 
-Install and load "remote" package and install and load "rWCVPdata" package from GitHub:
+Install and load "remotes" package and install and load "rWCVPdata" package from GitHub:
 
 ```{r}
 remotes.check<-"remotes" %in% rownames(installed.packages()) 
