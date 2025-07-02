@@ -34,11 +34,11 @@ Three taxonomic backbones are implemented: that of the Global Biodiversity Infor
 
 The taxonomic backbone used depends on the taxonomic group:
 
-1. The GBIF backbone is used for non-plant taxa (e.g., animals, fungi, and chromista)
+1. The GBIF backbone is used for taxa that are not vascular plants (e.g., animals, fungi, and chromista)
 
-2. The BODATSA backbone is used for alien plants recorded outside of captivity or cultivation in South Africa (i.e., those taxa included in BODATSA)
+2. The BODATSA backbone is used for alien vascular plants recorded outside of captivity or cultivation in South Africa (i.e., those taxa included in BODATSA)
 
-3. The WCVP backbone is used for alien plants not found outside of captivity or cultivation in South Africa (i.e., those taxa not included in BODATSA)
+3. The WCVP backbone is used for alien vascular plants not found outside of captivity or cultivation in South Africa (i.e., those taxa not included in BODATSA)
 
 In addition to standardising a list of taxon names based on the three taxonomic backbones, the workflow obtains canonical names and higher taxonomic information for the taxa from GBIF, and detects, corrects, and flags potential issues and errors. 
 
@@ -82,23 +82,26 @@ package.check <- lapply(
       library(x, character.only = TRUE)
     }
   }
-)
+) # check if the packages are installed, and install them if not. Load the packages
 ```
 
 Install and load "remotes" package and install and load "rWCVPdata" package from GitHub
 
 ```{r}
-remotes.check<-"remotes" %in% rownames(installed.packages()) 
+rWCVPcheck<-"rWCVPdata" %in% rownames(installed.packages()) # check if rWCVPdata is installed
+if(rWCVPcheck == FALSE){
+remotes.check<-"remotes" %in% rownames(installed.packages()) # check if remotes is installed
 if(remotes.check == FALSE){
-  install.packages("remotes")
-  remotes::install_github('matildabrown/rWCVPdata')
+  install.packages("remotes") # install remotes if required
 }
-require('rWCVPdata')
+remotes::install_github('matildabrown/rWCVPdata') # install rWCVPdata from GitHub if required
+}
+require('rWCVPdata') # load package
 ```
 
 ## Scripts
 
-The R script for this workflow is provided as a .R file and .Rmd file on a GitHub repository "https://github.com/KatelynFaulkner/rsa-ans-workflow".
+The R script for this workflow is provided as a .Rmd file on a GitHub repository "https://github.com/KatelynFaulkner/rsa-ans-workflow". The .Rmd file provides the code with full annotation. 
 
 The repository can be downloaded onto your computer as a zip file. The downloaded zip file will contain all the required folders. The zip file will need to be extracted. The main folder contains the Rstudio project file (rsa-ans-workflow.Rproj) of the workflow. This file should be opened to use the workflow. The subfolder `R/` contains the script as .R and .Rmd files. The subfolder `data/` contains three subfolders named `raw/`, `interim/`, and `processed/`. All files required to run the workflow need to be saved in the `raw/` subfolder. Outputs that are produced while executing the workflow, but that are not the final output, are stored in the folder `interim/`. The final output of the workflow is stored in the `processed/` folder. The `manuals/` subfolder contains a manual that describes the workflow as a R markdown (.Rmd file), and README.Rmd that describes the outputs of the workflow.
 
@@ -114,25 +117,25 @@ C. The list of taxon names that need to be standardised in csv format
 
 D. Information on the format of the taxon names to be standardised
 
-Input A is provided by the user and can be downloaded from https://posa.sanbi.org/sanbi/Explore. The user saves the file in the `raw/` subfolder.
+Further details on inputs are provided below.
 
-Input B is provided by the user, and is manually entered under Step 2a in the script of the workflow in DMY (day, month, year) format. For example "05 December 2024", "5-12-2024", "05/12/2024". 
+### Input A: BODATSA dataset
 
-Input C is provided by the user, who saves the file in the `raw/` subfolder. 
-
-Input D is provided by the user, and is manually entered under Step 2b in the script of the workflow. There are two possible options: "canonical" and "scientific". "canonical" is stipulated if the taxon names are scientific names without authorship and date information. "scientific" is stipulated if the taxon names are scientific names with authorship and date information.
-
-Further details on inputs A and C are provided below.
-
-### Input A: BODATSA data
-
-This dataset must be downloaded from https://posa.sanbi.org/sanbi/Explore. To do so, simply click download, indicated using the symbology for Microsoft excel (a green 'X'). The standard dataset must be downloaded (i.e., no columns must be added or removed before download). The dataset will be downloaded as an excel file, but must be saved in the `raw/` folder as a csv. The data must be used in exactly the format in which it is downloaded (i.e., it must not be changed in any way). The file must be named: BODATSA.csv.
+This dataset is provided by the user and must be downloaded from https://posa.sanbi.org/sanbi/Explore. To do so, simply click download, indicated using the symbology for Microsoft excel (a green 'X'). The standard dataset must be downloaded (i.e., no columns must be added or removed before download). The dataset will be downloaded as an excel file, but must be saved in the `raw/` folder as a csv. The data must be used in exactly the format in which it is downloaded (i.e., it must not be changed in any way). The file must be named: BODATSA.csv. This dataset is loaded in Step 2a of the workflow.
 
 The date the dataset is downloaded must be noted (see Step 2a below).
 
+### Input B: The date that the BODATSA dataset was downloaded
+
+The date that the BODATSA dataset was downloaded is provided by the user, and is manually entered under Step 2a in the script of the workflow in DMY (day, month, year) format. For example "05 December 2024", "5-12-2024", "05/12/2024". 
+
 ### Input C: List of taxon names that need to be taxonomically standardised
 
-This dataset must contain the list of taxon names that need to be standardised. The dataset must be saved as a csv file and be named 'OriginalNames.csv'. The dataset must contain only one column, which contains the names of the taxa. The name of this column must be 'verbatimScientificName'.
+This dataset is provided by the user and must contain the list of taxon names that need to be standardised. The dataset must be saved as a csv file in the `raw/` subfolder. The file must be be named 'OriginalNames.csv'. The dataset must contain only one column, which contains the names of the taxa. The name of this column must be 'verbatimScientificName'. This dataset is loaded in Step 2b of the workflow.
+
+### Input D: Information on the format of the taxon names to be standardised
+
+Information on the format of the taxon names to be standardised is provided by the user, and is manually entered under Step 2b in the script of the workflow. There are two possible options: "canonical" and "scientific". "canonical" is stipulated if the taxon names are scientific names without authorship and date information. "scientific" is stipulated if the taxon names are scientific names with authorship and date information.
 
 # Executing the workflow
 
@@ -154,17 +157,17 @@ In this step the downloaded BODATSA data is prepared to be used for taxon name s
 
 The BODATSA dataset is loaded and is assigned the name 'BODATSA'.
 
-Information on the date the BODATSA dataset was downloaded is manually entered into the script in DMY (day, month, year) format. For example "05 December 2024", "5/12/2024", "05-12-2024". If this information is not provided, or is not provided in the right format, then there will be an error, and the rest of the script will not run properly. This information is assigned the name 'BODATSADate'. 
+Information on the date the BODATSA dataset was downloaded is manually entered into the script in DMY (day, month, year) format. For example "05 December 2024", "5/12/2024", "05-12-2024". If this information is not provided, or is not provided in the right format, there will be an error, and the rest of the script will not run properly. This information is assigned the name 'BODATSADate'. 
 
-The BODATSA data are manipulated to address various issues. There are many instances where data are missing in the dataset, these are assigned 'NA'. There are small formatting inconsistencies in the scientific names in different parts of the dataset, and to standardise the formatting, "ssp." in the 'Rank1' column is replaced with "subsp.". In BODATSA, taxon names are split into several parts, with each part found in a different column. For example, there are separate columns for generic ('Genus') and specific epithets ('Sp1'). In this step the columns related to taxon names are joined so that there is a single column for canonical names, called 'canonicalName'; and a single column for scientific names, called 'scientificName'. For synonyms, BODATSA provides the accepted species name in the column 'Accepted'. In some instances the name in the 'Accepted' column is in a slighty different format from that in the 'scientificName' column created in this step. This issue is addressed by identifying the incorrectly formatted species names in the 'Accepted' column, and replacing them with the correctly formatted name in the 'scientificName' column. The correctly formatted name in the 'scientificName' column is identified using fuzzy matching techniques. In this process, names in the 'Accepted' column are only matched to names in the 'scientificName' column if they have the same binomial name. This ensures that the returned fuzzy matched names correspond to the appropriate species. The "jaccard" method from the 'stringdist' function is used for fuzzy matching, and the most similar match is selected. If this method identifies multiple equally similar matches, then the match with the highest number of equal components is selected. If multiple equally similar matches are still identified, then the 'lv' method from the 'stringdist' function is used, and the most similar match is selected. The corrected names are saved in the 'Accepted' column, the original data in the 'Accepted' column is saved in a column called 'AcceptedIssues' and records with this formatting issue are flagged in a column called 'synAccIssue'. The prepared BODATSA dataset is written to the `interim/` folder. The file is called 'BODATSAPrepared.csv'.
+The BODATSA data are manipulated to address various issues. There are many instances where data are missing in the dataset, these are assigned 'NA'. There are small formatting inconsistencies in the scientific names in different parts of the dataset, and to standardise the formatting, "ssp." in the 'Rank1' column is replaced with "subsp.". In BODATSA, taxon names are split into several parts, with each part found in a different column. For example, there are separate columns for generic ('Genus') and specific epithets ('Sp1'). In this step the columns related to taxon names are joined so that there is a single column for canonical names, called 'canonicalName'; and a single column for scientific names, called 'scientificName'. For synonyms, BODATSA provides the accepted species name in the column 'Accepted'. In some instances the name in the 'Accepted' column is in a slighty different format from that in the 'scientificName' column created in this step. This issue is addressed by identifying the incorrectly formatted species names in the 'Accepted' column, and replacing them with the correctly formatted name in the 'scientificName' column. The correctly formatted name in the 'scientificName' column is identified using fuzzy matching techniques. In this process, names in the 'Accepted' column are only matched to names in the 'scientificName' column if they have the same binomial name. This ensures that the returned fuzzy matched names correspond to the appropriate species. The "jaccard" method from the 'stringdist' function is used for fuzzy matching, and the most similar match is selected. If this method identifies multiple equally similar matches, then the match with the highest number of equal components is selected. If multiple equally similar matches are still identified, then the 'lv' method from the 'stringdist' function is used, and the most similar match is selected. The corrected names are saved in the 'Accepted' column, the original data in the 'Accepted' column is saved in a column called 'AcceptedIssues' and records with this formatting issue are flagged in a column called 'synAccIssue'. Taxon names that have been misapplied in southern Africa are removed - these are not linked in BODATSA to an accepted name. Taxon names that are unused autonyms are linked to an accepted name, and if the species level name is also a synonym, then these taxa are flagged as both being unused autonyms and synonyms.  The prepared BODATSA dataset is written to the `interim/` folder. The file is called 'BODATSAPrepared.csv'.
 
 ### Step 2b: Preparation of list of taxon names
 
 In this step the list of taxon names is prepared for processing.
 
-The dataset with the list of names is loaded, and named 'NamesDat'.
+The dataset with the list of names is loaded. If this file is not provided in the correct format there will be an error, and the rest of the script will not run properly. These data are given the name 'NamesDat'.  
 
-Information on the format of the names that need to be standardised is manually entered into the script. There are two options: 'canonical' and 'scientific'. If this information is not provided, or the provided information is not one of the accepted options, then there will be an error, and the rest of the script will not run properly. These details are given the name 'NameType'.
+Information on the format of the names that need to be standardised is manually entered into the script. There are two options: 'canonical' and 'scientific'. If this information is not provided, or the provided information is not one of the accepted options, there will be an error, and the rest of the script will not run properly. These details are given the name 'NameType'.
 
 The formatting of the spaces in the taxon names are standardised and double spaces are removed.
 
@@ -174,11 +177,11 @@ All the provided taxon names are passed to the GBIF API, accessed through the 'r
 
 ## Step 4: Extract plants
 
-Plants are extracted from the output from GBIF, so that their names can be standardised using other taxonomic backbones, and the outputs for non-plant taxa can be processed further. Two datasets are created, one for plants called 'PlantDat', and one for non-plant taxa called 'GBIFMatch'. All information obtained from GBIF besides the canonical names and higher taxonomic information are removed from the plant dataset ('PlantDat').
+Vascular plants are extracted from the output from GBIF, so that their names can be standardised using other taxonomic backbones, and the outputs for taxa that are not vascular plants can be processed further. Two datasets are created, one for vascular plants ('plants' hereafter) called 'PlantDat', and one for taxa that are not vascular plants ('non-plant taxa' hereafter) called 'GBIFMatch'. All information obtained from GBIF besides the canonical names and higher taxonomic information are removed from the plant dataset ('PlantDat').
  
 ## Step 5: Assess and flag issues for non-plant taxa
 
-The output of the taxonomic standardisation for non-plant taxa is evaluated; and sub-specific entities, duplicated taxon names, and taxon names with potential issues or errors are flagged. 
+The output of the taxonomic standardisation for non-plant taxa is evaluated; and sub-specific entities, taxon names with open nomenclature, duplicated taxon names, and taxon names with potential issues or errors are flagged. 
 
 The outputs are evaluated by looking at how many of the taxa:
 
@@ -195,15 +198,17 @@ Taxonomic issues are flagged. These are:
 
 2. Matches that were not exact (e.g., fuzzy matches)
 
-3. Doubtful taxon names (e.g., taxonomic homonyms, missapplied names)
+3. Doubtful taxon names (e.g., taxonomic homonyms)
 
 4. Unmatched taxa (those not matched to an accepted scientific name in GBIF or that were only matched at higher taxonomic levels)
 
 In addition, all taxa that either had a non-exact match, a doubtful name, or were not matched to an accepted scientific name in GBIF are flagged as having a potential error or issue. These records should be manually evaluated to finalise the taxon name.
 
-Sub-specific entities in the taxon names as provided by the user are flagged
+Sub-specific entities in the taxon names as provided by the user are flagged. These may need to be manually addressed.
 
 Duplicated names in the returned accepted scientific names, and in the taxon names provided by the user are also flagged. These need to be manually addressed.
+
+Taxon names provided by the user with open nomenclature are flagged. These may need to be manually addressed.
 
 ## Step 6: Preparation of output for non-plant taxa matched to GBIF
 
@@ -215,7 +220,7 @@ The taxon names in the 'PlantDat' dataset created in Step 4 are standardised usi
 
 ## Step 8: Assess and flag issues for plants
 
-The output of the taxonomic standardisation for plant taxa based on BODATSA is evaluated; and sub-specific entities, duplicated taxon names, and taxon names with potential issues or errors are flagged. 
+The output of the taxonomic standardisation for plant taxa based on BODATSA is evaluated; and sub-specific entities, taxon names with open nomenclature, duplicated taxon names, and taxon names with potential issues or errors are flagged. 
 
 The outputs are evaluated by looking at how many of the taxa:
 
@@ -229,23 +234,25 @@ The outputs are evaluated by looking at how many of the taxa:
 
 Taxonomic issues are flagged. These are:
 
-1. Synonyms
+1. Synonyms (including unused autonyms elevated to species level for which the species level name is a synonym)
 
 2. Matches that were not exact (e.g., accepted names corrected through fuzzy matching)
 
-3. Doubtful taxon names (uncertain, missapplied names, unresolved multiple matches)
+3. Doubtful taxon names (uncertain names, unresolved multiple matches)
 
-4. Unmatched taxa (those that could not be matched to an accepted scientific name in BODATSA)
+4. Unmatched taxa (those that could not be matched to an accepted scientific name in BODATSA, and unused autonyms (i.e., those matched to higher taxon levels))
 
 In addition, all taxa that either had a non-exact match, a doubtful name, or were not matched to an accepted scientific name in BODATSA are flagged as having a possible error or issue. These records should be manually evaluated to finalise the taxon name.
 
-Sub-specific entities in the taxon names as provided by the user are flagged
+Sub-specific entities in the taxon names as provided by the user are flagged. These may need to be manually addressed.
 
 Duplicated names in the returned accepted scientific names, and in the taxon names provided by the user are also flagged. These need to be manually addressed.
 
+Taxon names provided by the user with open nomenclature are flagged. These may need to be manually addressed.
+
 ## Step 9: Extract unmatched plants
 
-Plants that could not be matched to a name in BODATSA are extracted from the output from the BODATSA match, so that their names can be standardised using the WCVP taxonomic backbone. Two datasets are created, one for plants that could not be matched to an accepted scientific name in BODATSA called 'PlantUnMatched', and one for plants that could be matched called 'BODATSAMatch'. All information obtained from BODATSA besides the canonical name and higher taxonomic information are removed from the 'PlantUnMatched' dataset.
+Plants that could not be matched to a name in BODATSA (excluding unused autonyms) are extracted from the output from the BODATSA match, so that their names can be standardised using the WCVP taxonomic backbone. Two datasets are created, one for plants that could not be matched to an accepted scientific name in BODATSA called 'PlantUnMatched', and one for plants that could be matched called 'BODATSAMatch'. All information obtained from BODATSA besides the canonical name and higher taxonomic information are removed from the 'PlantUnMatched' dataset.
 
 ## Step 10: Preparation of output for plants matched to BODATSA
 
@@ -257,7 +264,7 @@ The plants for which a match could not be found in BODATSA are passed to the WCV
 
 ## Step 12: Assess and flag issues for plants matched to WCVP
 
-The output of the taxonomic standardisation for plant taxa based on WCVP is evaluated; and sub-specific entities, duplicated taxon names, and taxon names with potential issues or errors are flagged. 
+The output of the taxonomic standardisation for plant taxa based on WCVP is evaluated; and sub-specific entities, taxon names with open nomenclature, duplicated taxon names, and taxon names with potential issues or errors are flagged. 
 
 The outputs are evaluated by looking at how many of the taxa:
 
@@ -278,15 +285,17 @@ Taxonomic issues are flagged. These are:
 
 2. Matches that were not exact (e.g., fuzzy, and not at species level)
 
-3. Doubtful taxon names (invalid, illegitimate, missapplied, unresolved multiple matches)
+3. Doubtful taxon names (invalid, illegitimate, unresolved multiple matches)
 
 4. Unmatched taxa (those that could not be matched to an accepted scientific name in WCVP)
 
 In addition, all taxa that either had a non-exact match, a doubtful name, or were not matched to an accepted scientific name in WCVP are flagged as having a possible error or issue. These records should be manually evaluated to finalise the taxon name.
 
-Sub-specific entities in the taxon names as provided by the user are flagged
+Sub-specific entities in the taxon names as provided by the user are flagged. These may need to be manually addressed.
 
 Duplicated names in the returned accepted scientific names, and in the taxon names provided by the user are also flagged. These should be manually addressed.
+
+Taxon names provided by the user with open nomenclature are flagged. These may need to be manually addressed.
 
 ## Step 13: Preparation of output for plants matched to WCVP
 
