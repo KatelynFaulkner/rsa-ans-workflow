@@ -34,11 +34,11 @@ Three taxonomic backbones are implemented: that of the Global Biodiversity Infor
 
 The taxonomic backbone used depends on the taxonomic group:
 
-1. The GBIF backbone is used for non-plant taxa (e.g., animals, fungi, and chromista)
+1. The GBIF backbone is used for taxa that are not vascular plants (e.g., animals, fungi, and chromista)
 
-2. The BODATSA backbone is used for alien plants recorded outside of captivity and cultivation in South Africa (i.e., those taxa included in BODATSA)
+2. The BODATSA backbone is used for alien vascular plants recorded outside of captivity and cultivation in South Africa (i.e., those taxa included in BODATSA)
 
-3. The WCVP backbone is used for alien plants not found outside of captivity and cultivation in South Africa (i.e., those taxa not included in BODATSA)
+3. The WCVP backbone is used for alien vascular plants not found outside of captivity and cultivation in South Africa (i.e., those taxa not included in BODATSA)
 
 In addition to standardising a list of taxon names based on the three taxonomic backbones, the workflow obtains canonical names and higher taxonomic information for the taxa from GBIF, and detects, corrects, and flags potential issues and errors. 
 
@@ -48,7 +48,7 @@ Global biodiversity data standards as set by the Darwin Core are followed as far
 
 # Final output
 
-The final output is saved in the `processed/` folder as a csv named 'Taxon_names_standardised.csv'. The final output contains 17 columns.
+The final output is saved in the `processed/` folder as a csv named 'Taxon_names_standardised.csv'. The final output contains 18 columns.
 
 ## Description of variables
 
@@ -116,7 +116,7 @@ Type: Character (value of NA is possible if the verbatimScientificName could not
 
 ### synonym.flag
 
-Description: If the verbatimScientificName is a synonym of an accepted scientific name (i.e., TRUE)
+Description: If the verbatimScientificName is a synonym of an accepted scientific name (i.e., TRUE). Includes instances where verbatimScientificName is an unused autonym, and the species that it has been elevated to is a synonym. 
 
 Type: Factor with two levels (TRUE and FALSE)
 
@@ -128,37 +128,43 @@ Type: Factor with two levels (TRUE and FALSE)
 
 ### doubtful.flag
 
-Description: If the verbatimScientificName was either matched to multiple accepted scientific names, and this could not be resolved (i.e., taxonomic homonym); or has a status that is not accepted or synonym (i.e., TRUE). This is doubtful as per GBIF. Includes uncertain or missapplied as per BODATSA; and invalid, illegitimate and missapplied as per WCVP.
+Description: If the verbatimScientificName was either matched to multiple accepted scientific names, and this could not be resolved (i.e., taxonomic homonym); or has a status that is not accepted or synonym; or could only be matched at a higher taxonomic level (e.g., genus) (i.e., TRUE). This is doubtful as per GBIF. Includes uncertain as per BODATSA; and invalid, illegitimate and missapplied as per WCVP.
 
 Type: Factor with two levels (TRUE and FALSE)
 
 ### unmatched.flag
 
-Description: If the verbatimScientificName could not be matched to an accepted scientific name in the relevant taxonomic backbone (i.e., TRUE)
+Description: If the verbatimScientificName could not be matched to an accepted scientific name in the relevant taxonomic backbone; or was matched to an accepted scientific name at a higher taxonomic level (e.g., genus for a species, or species for an unused autonym) (i.e., TRUE).
 
 Type: Factor with two levels (TRUE and FALSE)
 
 ### possibleError.flag
 
-Description: If any of unmatched.flag, uncertain.flag or doubtful.flag are TRUE (i.e, TRUE). The outputs for these taxon names should be examined manually
+Description: If any of unmatched.flag, uncertain.flag or doubtful.flag are TRUE (i.e, TRUE). The outputs for these taxon names should be examined manually.
 
 Type: Factor with two levels (TRUE and FALSE)
 
 ### subspecific.flag
 
-Description: If the verbatimScientificName is a sub-specific entity (i.e., TRUE)
+Description: If the verbatimScientificName is a sub-specific entity (i.e., TRUE). These taxon names may need to be examined manually.
 
 Type: Factor with two levels (TRUE and FALSE)
 
 ### scientificNameDuplicate.flag
 
-Description: If the scientificName appears multiple times in the list (i.e., TRUE)
+Description: If the scientificName appears multiple times in the list (i.e., TRUE). These taxon names will need to be removed manually
 
 Type: Factor with two levels (TRUE and FALSE)
 
 ### verbatimNameDuplicate.flag
 
-Description: If the verbatimScientificName appears multiple times in the list (i.e., TRUE)
+Description: If the verbatimScientificName appears multiple times in the list (i.e., TRUE). These taxon names will need to be removed manually
+
+Type: Factor with two levels (TRUE and FALSE)
+
+### openNomenclature.flag
+
+Description: If the verbatimScientificName contains open  - abbreviations that indicate uncertainty or the provisional status of the taxon’s identification ("sp.", "spp.", "cf.", "nr.", "aff.", "?") (i.e., TRUE). These taxon names may need to be examined manually.
 
 Type: Factor with two levels (TRUE and FALSE)
 
@@ -444,7 +450,7 @@ Type: Character (value of NA is possible if the verbatimScientificName could not
 
 Description: Indicates whether the verbatimScientificName is an accepted scientific name
 
-Type: Factor (levels include: acc, inc, misap, syn, unc, genlv. Value of NA is possible. Can be several values separated by a pipe delimiter if verbatimScientificName was a taxonomic homonym and was matched to multiple names in the  relevant taxonomic backbone)
+Type: Factor (levels include: acc, inc, aut, syn, unc, genlv. Value of NA is possible. Can be several values separated by a pipe delimiter if verbatimScientificName was a taxonomic homonym and was matched to multiple names in the  relevant taxonomic backbone); or if the taxon name is an unused autonym and the species name that it has been elevated to is a synonym.
 
 **Value and definition**
 
@@ -454,7 +460,7 @@ syn: verbatimScientificName is currently a synonym
 
 inc: the verbatimScientificName includes lower ranks
 
-misap: the verbatimScientificName was misapplied in terms of its concept to a taxon
+aut: the verbatimScientificName is an unused autonym, and the taxon has been elevated to the species level
 
 unc: verbatimScientificName is of uncertain application
 
@@ -474,9 +480,9 @@ Type: Character (value of NA is possible)
 
 ### Accepted
 
-Description: The accepted scientific name if the verbatimScientificName is a synonym as per BODATSA, after formatting was corrected during Step 2a of the workflow
+Description: The accepted scientific name if the verbatimScientificName is a synonym as per BODATSA, after formatting was corrected during Step 2a of the workflow; or if the verbatimScientificName is an unused autonym, and the taxon has been elevated to the species level.
 
-Type: Character (value of NA is possible if the verbatimScientificName could not be matched to a name in BODATSA or if the verbatimScientificName is not a synonym)
+Type: Character (value of NA is possible if the verbatimScientificName could not be matched to a name in BODATSA or if the verbatimScientificName is not a synonym or unused autonym)
 
 ### synAccIssue
 
@@ -756,7 +762,7 @@ Type: Character (value of NA is possible)
 
 Description: Indicates if the taxon name (see canonicalName and scientificName) is an accepted scientific name
 
-Type: Factor (levels include: acc, inc, misap, syn, unc, genlv. Value of NA is possible)
+Type: Factor (levels include: acc, inc, syn, unc, genlv., aut, aut|syn. Value of NA is possible)
 
 **Value and definition**
 
@@ -766,11 +772,13 @@ syn: taxon name is currently a synonym
 
 inc: taxon name includes lower ranks
 
-misap: taxon name was misapplied in terms of its concept to a taxon
+aut: taxon name is an unused autonym and has been elevated to the species level
 
 unc: taxon name is of uncertain application
 
 genlv: taxon name is at the genus level only
+
+aut|syn: taxon name is an unused autonym and has been elevated to the species level. But that species name is a synonym.
 
 ### AcceptedIssues
 
@@ -786,7 +794,7 @@ Type: Character (value of NA is possible)
 
 ### Accepted
 
-Description: The accepted scientific name if the taxon name is a synonym as per BODATSA, after formatting was corrected during Step 2a of the workflow
+Description: The accepted scientific name if the taxon name is a synonym as per BODATSA, after formatting was corrected during Step 2a of the workflow; or the accepted scientific name if the taxon name is a unused autonym as per BODATSA
 
 Type: Character (value of NA is possible)
 
