@@ -43,21 +43,25 @@ Three taxonomic backbones are implemented: that of the Global Biodiversity Infor
 
 The taxonomic backbone used depends on the taxonomic group:
 
-1. The GBIF backbone is used for non-plant taxa (e.g., animals, fungi, and chromista)
+1. The GBIF backbone is used for alien taxa that are not vascular plants (e.g., animals, fungi, and chromista)
 
-2. The BODATSA backbone is used for alien plants recorded outside of captivity or cultivation in South Africa (i.e., those taxa included in BODATSA)
+2. The BODATSA backbone is used for alien vascular plants recorded outside of captivity or cultivation in South Africa (i.e., those taxa included in BODATSA)
 
-3. The WCVP backbone is used for alien plants not found outside of captivity or cultivation in South Africa (i.e., those taxa not included in BODATSA)
+3. The WCVP backbone is used for alien vascular plants not found outside of captivity or cultivation in South Africa (i.e., those taxa not included in BODATSA)
 
 In addition to standardising a list of taxon names based on the three taxonomic backbones, the workflow obtains canonical names and higher taxonomic information for the taxa from GBIF, and detects, corrects, and flags potential issues and errors. 
 
-This document provides the script for the workflow with annotations.
+This document provides the script for the workflow with annotations. Before running the script, please read through the full description of the workflow.
 
-Further details are available at the GitHub repository for the workflow: "https://github.com/KatelynFaulkner/rsa-ans-workflow"
+The full description and further details are available at the GitHub repository for the workflow: "https://github.com/KatelynFaulkner/rsa-ans-workflow"
 
 The workflow has been created in R software, version 4.4.0 (R Core Team 2024). 
 
+**Input datasets**
 
+1. The BODATSA dataset is provided by the user and can be downloaded from https://posa.sanbi.org/sanbi/Explore. The user saves the file as a .csv file in the `raw/` subfolder. This dataset must be named 'BODATSA.csv'. This dataset is loaded in Step 2a of the workflow.
+
+2. The list of taxon names that need to be standardised must be saved as a csv file in the `raw/` subfolder and be must be named ‘OriginalNames.csv’. The dataset must contain only one column, which contains the names of the taxa. The name of this column must be ‘verbatimScientificName’. This dataset is loaded in Step 2b of the workflow.
 
 **Manual inputs into script**
 
@@ -65,7 +69,7 @@ Two pieces of information need to be manually entered into the script before it 
 
 1. In Step2a, the date that the BODATSA dataset was downloaded, must be manually entered into the script in day-month-year (DMY) format.
 
-2. In Step 2b, information on the format of the taxon names must be manually entered into the script. There are two accepted options: scientific or canonical.
+2. In Step 2b, information on the format of the taxon names must be manually entered into the script. There are two accepted options: 'scientific' (taxon name with authorship and date information) or 'canonical' (taxon name without authorship and date information). 
 
 \newpage
 
@@ -88,18 +92,21 @@ package.check <- lapply(
       library(x, character.only = TRUE)
     }
   }
-)
+) # check if the packages are installed, and install them if not. Load the packages
 ```
 
 ### Install and load "remotes" package from R CRAN, and install and load "rWCVPdata" package from GitHub
 
 ```{r}
-remotes.check<-"remotes" %in% rownames(installed.packages()) 
+rWCVPcheck<-"rWCVPdata" %in% rownames(installed.packages()) # check if rWCVPdata is installed
+if(rWCVPcheck == FALSE){
+remotes.check<-"remotes" %in% rownames(installed.packages()) # check if remotes is installed
 if(remotes.check == FALSE){
-  install.packages("remotes")
-  remotes::install_github('matildabrown/rWCVPdata') # one package required from GitHub
+  install.packages("remotes") # install remotes if required
 }
-require('rWCVPdata') # load package from GitHub
+remotes::install_github('matildabrown/rWCVPdata') # install rWCVPdata from GitHub if required
+}
+require('rWCVPdata') # load package
 ```
 
 # Step 2: Preparation of data
@@ -107,6 +114,8 @@ require('rWCVPdata') # load package from GitHub
 ## Step 2a: Preparation of BODATSA dataset
 
 ### Load dataset from BODATSA
+
+The file must be named “BODATSA.csv”, and must be saved in the `raw/` folder. 
 
 ```{r}
 BODATSA<-read.csv("data\\raw\\BODATSA.csv") # file must be named "BODATSA.csv"
@@ -167,7 +176,8 @@ BODATSA <- BODATSA %>% unite("scientificName", c(Genus, Sp1, Author1, Rank1, Sp2
 Identify the names in the "Accepted" column that are incorrectly formatted
 
 ```{r}
-FormatIssue<-BODATSA%>% filter(!Accepted %in% BODATSA$scientificName & !is.na(Accepted))
+FormatIssue<-BODATSA%>% filter(!Accepted %in% BODATSA$scientificName & !is.na(Accepted))%>% 
+  filter(!grepl("\\×",Accepted))
 ```
 
 Identify the accepted name in the correct format using fuzzy matching
@@ -179,7 +189,11 @@ for(i in 1:length(FormatIssue$Accepted)){ # loop through names with format issue
   y<-paste(keywords[1:2], collapse = " ") # create string that only contains the genus and species of the name
   z <-  BODATSA %>%
     filter(str_detect(scientificName, y)) # subset BODATSA to only include records for that genus and species
-  a<-stringdist(FormatIssue$Accepted[i], z$scientificName, method="jaccard") # fuzzy match the name to those of the genus and species with jaccard method
+  if(length(z$scientificName) == 0){ # if no records, take the name as is
+    c<-FormatIssue$Accepted[i]
+  }
+  if(length(z$scientificName) > 0){ # if there are records perform fuzzy matching
+  a<-stringdist(FormatIssue$Accepted[i], z$scientificName, method="jaccard", useBytes = T) # fuzzy match the name to those of the genus and species with jaccard method
   b<-which(a==min(a)) # get the closest match
   if(length(b)==1){
   c<-z$scientificName[b] # take most similar match if there is only one
@@ -200,6 +214,7 @@ for(i in 1:length(FormatIssue$Accepted)){ # loop through names with format issue
     c<-issues$scientificName[d][h] # take the one that is the closest match
   }
   }
+  }  
   fullScientificName<-rbind(fullScientificName, c) # bind the name identified through fuzzy matching to result data frame
 }
 ```
@@ -240,6 +255,34 @@ Delete unnecessary column
 BODATSA$fullScientificName<-NULL
 ```
 
+### Remove misapplied taxon names
+
+Misapplied names are currently not linked to accepted names
+
+```{r}
+BODATSA<-BODATSA %>% filter(TaxStat != "misap") # filter out misapplied names
+```
+
+### Link unused autonyms to their accepted names, and flag if a synonym
+
+‘Unused autonyms’ are when there are no longer any infraspecific taxa recognised in the species, and the infraspecific taxa have all been raised to species level. The autonym is no longer relevant. BODATSA currently does not link unused autonyms to the accepted name. Note in some cases the species level name is also a synonym. 
+
+```{r}
+BODATSAsub<-BODATSA %>%
+  select(scientificName, TaxStat:synAccIssue) # subset BODATSA dataset to required columns
+
+aut<-BODATSA %>% filter(TaxStat == "aut")%>% 
+  unite("sppName", c(Genus, Sp1, Author1), na.rm = TRUE, sep = " ", remove = FALSE) %>%
+  select(Family:TaxStat) %>%
+  left_join(BODATSAsub, join_by(sppName == scientificName))%>% mutate(TaxStat.y = case_when((TaxStat.y !="syn")~NA,
+                                  TRUE~TaxStat.y)) %>%
+  unite("TaxStat", TaxStat.x:TaxStat.y, sep = "|", remove = TRUE, na.rm = TRUE) %>%
+  mutate(Accepted = replace(Accepted, is.na(Accepted)==TRUE, sppName[is.na(Accepted)==TRUE])) # filter for unused autonyms and identify accepted names for them, adjust taxonStat information to flag if the taxon is also a synonym
+
+BODATSA<-BODATSA %>% filter(TaxStat != "aut") %>%
+  bind_rows(aut) # bring the dataset back together
+```
+
 ### Write to file
 
 ```{r}
@@ -250,16 +293,27 @@ write.csv(BODATSA, "data//interim//BODATSAPrepared.csv", row.names = FALSE)
 
 ### Load list of names for standardisation
 
+The file must be named "OriginalNames.csv", and must be saved in the `raw/` folder. The file must contain only one column, which contains the names of the taxa, and the name of this column must be ‘verbatimScientificName’.
+
 ```{r}
-NamesDat<-read.csv("data\\raw\\OriginalNames.csv") # file must be named "OriginalNames.csv"
+NamesFile<-read.csv("data\\raw\\OriginalNames.csv")
+```
+
+Check to see if the file containing the taxon names has been provided in the correct format. If there is an error, please try again to provide this information.
+
+```{r}
+if (length(colnames(NamesFile)) == 1 & colnames(NamesFile)[1] == "verbatimScientificName") { NamesDat<-NamesFile  # check to see if the correct information was provided  
+  } else { 
+    stop("The file of taxon names for standardisation was not provided, or was not provided in the correct format. Please try again")
+  }
 ```
 
 ### Provide required information on list of names for standardisation
 
-In the quotation marks in the chunk of code below, type in the format of the taxon names: either 'canonical' or 'scientific'
+In the quotation marks in the chunk of code below, type in the format of the taxon names: either 'canonical' (taxon name without authorship and date information) or 'scientific' (taxon name with authorship and date information)
 
 ```{r}
-UserNameType<-"" # In the quotation marks, type in either 'canonical' or 'scientific'
+UserNameType<-"" # In the quotation marks, type in either 'canonical' (taxon name without authorship and date information) or 'scientific' (taxon name with authorship and date information)
 ```
 
 Check to see if the information on the format of the taxon names has been provided and is one of the possible options. If there is an error, please try again to provide this information.
@@ -268,7 +322,7 @@ Check to see if the information on the format of the taxon names has been provid
 NameTypeFormat<-ifelse(UserNameType == "scientific", "scientific",
                  ifelse(UserNameType == "Scientific", "scientific",
                         ifelse(UserNameType == "canonical","canonical",
-                               ifelse(UserNameType == "Canonical","canonical", NA))))
+                               ifelse(UserNameType == "Canonical","canonical", NA)))) # check to see if the correct information was provided  
 if (is.na(NameTypeFormat)==TRUE) {stop("Format of the taxon names was not entered, or was not one of the accepted options. Please try again")    
   } else { 
     NameType<-NameTypeFormat
@@ -319,7 +373,12 @@ for(j in 1:m){ # loop through the taxon names and check each taxon name against 
     u<-cbind(NamesDat[j,], x$canonicalName, x$kingdom, x$phylum, x$class, x$order,x$family, x$scientificName, x$synonym, x$rank, x$status, x$matchType, x$usageKey)
   }
   else if(x$status == "SYNONYM"){ # if name is a synonym, fetch the accepted scientific name, and bind required columns
-    a<-name_backbone(x$species, kingdom = x$kingdom)
+    if(x$rank == "GENUS"){
+    a<-name_backbone(x$genus, kingdom = x$kingdom)  # if at a genus level fetch the accepted genus
+    }
+    else if(x$rank != "GENUS"){
+    a<-name_backbone(x$species, kingdom = x$kingdom) # otherwise fetch the accepted species
+    }
     u<-cbind(NamesDat[j,], x$canonicalName, x$kingdom, x$phylum, x$class, x$order,x$family, a$scientificName, x$synonym, x$rank, x$status, x$matchType, x$usageKey)
   }
   colnames(u)[c(ncol(u)-12, ncol(u)-11, ncol(u)-10, ncol(u)-9, ncol(u)-8, ncol(u)-7, ncol(u)-6, ncol(u)-5, ncol(u)-4, ncol(u)-3,ncol(u)-2, ncol(u)-1,
@@ -340,21 +399,22 @@ write.csv(GBIFInterim, "data//interim//GBIFInterim.csv", row.names = FALSE)
 
 ```{r}
 unique(GBIFMatch$kingdom) # list of kingdoms in the output
+unique(GBIFMatch$phylum) # list of phyla in the output
 ```
 
-### Create a plants subset
+### Create a vascular plants (hereafter 'plants') subset
 
 ```{r}
-PlantDat<-GBIFMatch %>% filter(kingdom == "Plantae")  # create subset of plants
+PlantDat<-GBIFMatch %>% filter(phylum == "Tracheophyta")  # create subset of plants
 
 PlantDat<-PlantDat %>% select(verbatimScientificName:family) # only keep the relevant columns
 names(PlantDat) # names of the columns
 ```
 
-### Create a non-plants subset
+### Create a subset of taxa that are not vascular plants (hereafter 'non-plant' taxa)
 
 ```{r}
-GBIFMatch<-GBIFMatch %>% filter(kingdom != "Plantae"|is.na(kingdom)) # create a non-plants subset 
+GBIFMatch<-GBIFMatch %>% filter(phylum != "Tracheophyta"|is.na(kingdom)) # create a non-plants subset 
 ```
 
 # Step 5: Assess and flag issues for non-plant taxa
@@ -406,7 +466,7 @@ GBIFMatch = GBIFMatch %>%
                                   TRUE~FALSE)) # give TRUE if a fuzzy match
 ```
 
-Flag doubtful taxon names (e.g., taxonomic homonyms, missapplied taxon names)
+Flag doubtful taxon names (e.g., taxonomic homonyms)
 
 ```{r}
 GBIFMatch = GBIFMatch %>% 
@@ -456,12 +516,24 @@ GBIFMatch = GBIFMatch %>%
   mutate(verbatimNameDuplicate.flag = n() > 1) # TRUE if a duplicate
 ```
 
+Flag verbatim names that contain open nomenclature (i.e., "sp.", "spp.", "cf.", "nr.", "aff.", "?")
+
+```{r}
+GBIFMatch <- GBIFMatch %>%  mutate(openNomenclature.flag=case_when(
+  (str_detect(verbatimScientificName,fixed("sp. "))) ~ TRUE,                                                            (str_detect(verbatimScientificName, fixed("spp. "))) ~ TRUE,
+  (str_detect(verbatimScientificName, fixed("cf. "))) ~ TRUE,  
+  (str_detect(verbatimScientificName, fixed("nr. "))) ~ TRUE,
+  (str_detect(verbatimScientificName, fixed("aff. "))) ~ TRUE,
+  (str_detect(verbatimScientificName, "\\?")) ~ TRUE,
+  TRUE~FALSE)) # TRUE if open nomenclature
+```
+
 # Step 6: Preparation of output for non-plant taxa matched to GBIF
 
 ### Add column with the source of the scientific name, the date accessed, and web-link
 
 ```{r}
-GBIFMatch$scientificNameSource<-ifelse(GBIFMatch$unmatched.flag == TRUE, 
+GBIFMatch$scientificNameSource<-ifelse(is.na(GBIFMatch$scientificName) == TRUE, 
                                        "NA", paste0("GBIF", " ", "(", format(Sys.Date(), "%d %B %Y"),")", " ","https://www.gbif.org/species/", GBIFMatch$usageKey))
 ```
 
@@ -476,7 +548,7 @@ names(GBIFMatch) # names of the columns
 
 ### Merge plant dataset and BODATSA
 
-Merge based on canonical name
+Merge based on canonical name (see Step 2b)
 
 ```{r}
 if(NameType == "canonical"){
@@ -485,7 +557,7 @@ BODATSAMatch<-
 }
 ```
 
-Merge based on scientific name (with author information)
+Merge based on scientific name (with author information) (see Step 2b)
 
 ```{r}
 if(NameType == "scientific"){
@@ -495,7 +567,7 @@ if(NameType == "scientific"){
 }
 ```
 
-### Replace synonyms in "scientificName" column with accepted names from "Accepted" column
+### Replace synonyms and unused autonymns in "scientificName" column with accepted names from "Accepted" column
 
 ```{r}
 BODATSAMatch<-BODATSAMatch %>%
@@ -590,11 +662,13 @@ BODATSAMatch %>%
 
 ### Flag taxonomic issues
 
-Flag synonyms
+Flag synonyms (includes taxa that are unused autonyms that have been elevated to the species level, and for which that species name is a synonym)
 
 ```{r}
 BODATSAMatch = BODATSAMatch %>% 
-  mutate(synonym.flag = case_when((TaxStat =="syn") ~ TRUE, TRUE ~ FALSE)) # TRUE if a synonym
+  mutate(synonym.flag = case_when((TaxStat =="syn") ~ TRUE, 
+                                  (TaxStat =="aut|syn") ~ TRUE,
+                                  TRUE ~ FALSE)) # TRUE if a synonym
 ```
 
 Flag taxon names that were not exact matches (i.e., accepted names corrected through fuzzy matching)
@@ -605,20 +679,23 @@ BODATSAMatch = BODATSAMatch %>%
                                   TRUE~FALSE)) # TRUE if fuzzy matching involved
 ```
 
-Flag doubtful taxa (uncertain, missapplied, and those which have multiple matches that are not resolved)
+Flag doubtful taxa (uncertain and those which have multiple matches that are not resolved)
 
 ```{r}
 BODATSAMatch <- BODATSAMatch %>%  mutate(doubtful.flag=case_when((multipleMatchesUnresolved =="TRUE")~TRUE,
-                                                                  TRUE~FALSE)) %>% 
-  mutate(doubtful.flag = str_detect(TaxStat, "unc|misap")) # TRUE if doubtful
+                              (str_detect(TaxStat, "unc")) ~ TRUE, 
+                              TRUE~FALSE)) # TRUE if doubtful
 ```
 
-Flag unmatched taxa
+Flag unmatched taxa (those unmatched, or matched at higher taxon levels, includes unused autonyms)
 
 ```{r}
 BODATSAMatch = BODATSAMatch %>% 
   group_by(Genus) %>% 
-  mutate(unmatched.flag = ifelse(Genus =="NA", TRUE, FALSE)) # TRUE if unmatched
+  mutate(unmatched.flag = case_when((Genus =="NA") ~ TRUE, 
+                                (TaxStat =="aut") ~ TRUE,
+                                (TaxStat =="aut|syn") ~ TRUE,
+                                TRUE ~ FALSE)) # TRUE if unmatched
 ```
 
 Flag if the result should be checked for a possible error or issue (unmatched, doubtful, and uncertain matches)
@@ -653,19 +730,31 @@ BODATSAMatch = BODATSAMatch %>%
   mutate(verbatimNameDuplicate.flag = n() > 1) # TRUE if a duplicate
 ```
 
-# Step 9: Extract unmatched plants
-
-### Create a subset of unmatched plants
+Flag verbatim names that contain open nomenclature (i.e., "sp.", "spp.", "cf.", "nr.", "aff.", "?")
 
 ```{r}
-PlantUnMatched<-BODATSAMatch %>% filter(unmatched.flag == "TRUE") # subset of the unmatched plants
+BODATSAMatch <- BODATSAMatch %>%  mutate(openNomenclature.flag=case_when(
+  (str_detect(verbatimScientificName, fixed("sp. "))) ~ TRUE,
+  (str_detect(verbatimScientificName, fixed("spp. "))) ~ TRUE, 
+  (str_detect(verbatimScientificName, fixed("cf. "))) ~ TRUE,
+  (str_detect(verbatimScientificName, fixed("nr. "))) ~ TRUE, 
+  (str_detect(verbatimScientificName, fixed("aff. "))) ~ TRUE,
+  (str_detect(verbatimScientificName, "\\?")) ~ TRUE, TRUE~FALSE)) # TRUE if open nomenclature
+```
+
+# Step 9: Extract unmatched plants
+
+### Create a subset of unmatched plants (does not include unused autonyms)
+
+```{r}
+PlantUnMatched<-BODATSAMatch %>% filter(Genus =="NA") # subset of the unmatched plants
 PlantUnMatched<-PlantUnMatched %>% select(verbatimScientificName:family) # remove unwanted columns
 ```
 
 ### Create a subset of matched plants
 
 ```{r}
-BODATSAMatch<-BODATSAMatch%>% filter(unmatched.flag == FALSE) # subset of matched plants
+BODATSAMatch<-BODATSAMatch%>% filter(Genus !="NA") # subset of matched plants
 ```
 
 # Step 10: Preparation of output for plants matched to BODATSA 
@@ -846,6 +935,7 @@ Flag doubtful taxon names (e.g., invalid, illegitimate, missapplied, and those w
 ```{r}
 WCVPMatch<-WCVPMatch %>% 
   mutate(doubtful.flag = case_when((multiple_matchesUnresolved == TRUE)~TRUE,
+                                   (wcvp_rank == "Genus") ~ TRUE,
                                    (wcvp_status == "Accepted")~FALSE,
                                     (wcvp_status =="Synonym")~FALSE,
                                     (wcvp_status == "NA") ~FALSE,
@@ -871,7 +961,7 @@ Flag sub-specific entities
 ```{r}
 WCVPMatch = WCVPMatch %>% 
   group_by(wcvp_rank) %>% 
-  mutate(subspecific.flag = ifelse(wcvp_rank =="Species"|wcvp_rank == "NA", FALSE, TRUE)) # TRUE if sub-specific entity
+  mutate(subspecific.flag = ifelse(wcvp_rank =="Species"|wcvp_rank == "NA"|wcvp_rank == "Genus", FALSE, TRUE)) # TRUE if sub-specific entity
 ```
 
 Flag duplicates in returned scientific names (exclude NAs)
@@ -889,6 +979,19 @@ Flag duplicates in verbatim names
 WCVPMatch = WCVPMatch %>% 
   group_by(verbatimScientificName) %>% 
   mutate(verbatimNameDuplicate.flag = n() > 1) # TRUE if duplicate
+```
+
+Flag verbatim names that contain open nomenclature (i.e., "sp.", "spp.", "cf.", "nr.", "aff.", "?")
+
+```{r}
+WCVPMatch <- WCVPMatch %>%  mutate(openNomenclature.flag=case_when(
+  (str_detect(verbatimScientificName,fixed("sp. "))) ~ TRUE,
+  (str_detect(verbatimScientificName, fixed("spp. "))) ~ TRUE,
+  (str_detect(verbatimScientificName, fixed("cf. "))) ~ TRUE,
+  (str_detect(verbatimScientificName, fixed("nr. "))) ~ TRUE,
+  (str_detect(verbatimScientificName, fixed("aff. "))) ~ TRUE,
+  (str_detect(verbatimScientificName, "\\?")) ~ TRUE,
+  TRUE~FALSE)) # TRUE if open nomenclature
 ```
 
 # Step 13: Preparation of output for plants matched to WCVP
