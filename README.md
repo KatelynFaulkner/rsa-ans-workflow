@@ -5,11 +5,11 @@ Three taxonomic backbones are implemented: that of the Global Biodiversity Infor
 
 The taxonomic backbone used depends on the taxonomic group:
 
-1. The GBIF backbone is used for non-plant taxa (e.g., animals, fungi, and chromista)
+1. The GBIF backbone is used for alien taxa that are not vascular plants (e.g., animals, fungi, and chromista)
 
-2. The BODATSA backbone is used for alien plants recorded outside of captivity or cultivation in South Africa (i.e., those taxa included in BODATSA)
+2. The BODATSA backbone is used for alien vascular plants recorded outside of captivity or cultivation in South Africa (i.e., those taxa included in BODATSA)
 
-3. The WCVP backbone is used for alien plants not found outside of captivity or cultivation in South Africa (i.e., those taxa not included in BODATSA)
+3. The WCVP backbone is used for alien vascular plants not found outside of captivity or cultivation in South Africa (i.e., those taxa not included in BODATSA)
 
 In addition to standardising a list of taxon names based on the three taxonomic backbones, the workflow obtains canonical names and higher taxonomic information for the taxa from GBIF, and detects, corrects, and flags potential issues and errors. 
 
@@ -56,17 +56,20 @@ package.check <- lapply(
 )
 ```
 
-Install and load "remotes" package and install and load "rWCVPdata" package from GitHub:
+Install (if required) the "remotes" package from R CRAN and the "rWCVPdata" package from GitHub, and load these packages as required:
 
 ```{r}
+rWCVPcheck<-"rWCVPdata" %in% rownames(installed.packages())
+if(rWCVPcheck == FALSE){
 remotes.check<-"remotes" %in% rownames(installed.packages()) 
 if(remotes.check == FALSE){
-  install.packages("remotes")
-  remotes::install_github('matildabrown/rWCVPdata')
+  install.packages("remotes") # install remotes if required
+}
+remotes::install_github('matildabrown/rWCVPdata')
 }
 require('rWCVPdata')
 ```
 
 ### Installing and running the scripts
 
-This repository can be downloaded onto your computer as a zip file. The downloaded zip file will contain all the required folders. The zip file will need to be extracted. The main folder contains the Rstudio project file (rsa-ans-workflow.Rproj) of the workflow. This file should be opened to use the workflow. The subfolder `R/` contains the script as .R and .Rmd files. The folder `manuals/` contains a manual describing the workflow (.Rmd), and a README.Rmd that decribes the outputs.
+This repository can be downloaded onto your computer as a zip file. The downloaded zip file will contain all the required folders. The zip file will need to be extracted. The main folder contains the Rstudio project file (rsa-ans-workflow.Rproj) of the workflow. This file should be opened to use the workflow. The subfolder `R/` contains the script an annotated .Rmd file. The folder `manuals/` contains a manual describing the workflow (.Rmd), and a README.Rmd that decribes the outputs. The manual must be read before attempting to run the workflow script.
